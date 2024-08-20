@@ -233,6 +233,15 @@ export default function Page() {
             </div>
           </BlurFade>
         </div>
+        {/* mastodon verification div */}
+        <div>
+          <div style={{ display: "none" }}>
+            <div className="custom-html">Hidden HTML</div>
+            <a rel="me" href="https://mastodon.social/@samgutentag">
+              Mastodon
+            </a>
+          </div>
+        </div>
       </section>
     </main>
   );
