@@ -40,6 +40,10 @@ export const DATA = {
         url: "https://mastodon.social/@samgutentag",
         icon: Icons.mastodon,
       },
+      BlueSky: {
+        url: "https://bsky.app/profile/samgutentag.com",
+        icon: Icons.bluesky,
+      },
       // Youtube: {
       //   url: "https://youtube.com/c/dillionverma",
       //   icon: Icons.youtube,
@@ -75,7 +79,7 @@ export const DATA = {
       href: "https://www.penumbrainc.com",
       badges: [],
       location: "Alameda, CA",
-      title: "Developer Support Engineer,",
+      title: "Developer Support Engineer",
       logoUrl: "/penumbra.png",
       start: "September 2018",
       end: "August 2022",
@@ -87,7 +91,7 @@ export const DATA = {
       href: "https://www.ilm.com",
       badges: [],
       location: "San Francisco, CA",
-      title: "Creature Technical Director,",
+      title: "Creature Technical Director",
       logoUrl: "/ilm.png",
       start: "November 2014",
       end: "February 2018",
