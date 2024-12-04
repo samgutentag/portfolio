@@ -1,0 +1,44 @@
+---
+title: "🚰 Leak Detection, And Python"
+summary: "Can't Go Under It, Gotta Go Over It"
+publishedAt: "2024-07-30"
+---
+
+## Overview
+
+into paragraph
+
+## flume alerts
+
+insert photo of alert
+
+> link to flume w/ referral code and callout to look for discounts/rebates
+
+## Data
+
+how to download data from flume
+
+## Analysis
+
+python, pandas, matplotlib
+
+### Extract Leak events from Regular Usage
+
+- histogram bucket sizes of water flow
+- identify largest "trickle" measurement
+  - subset dataframe to only those events
+
+### Leak Event Counter
+
+- extra column to count events
+- taking the max counter per day to visualize data
+  - call out spike at leak event on july 14th
+
+### Calculating Leak Gallons
+
+- adding up the leak events to view over time
+  - extra sep of calculating cost?
+
+## Solution
+
+replumb house
