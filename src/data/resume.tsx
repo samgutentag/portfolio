@@ -5,8 +5,8 @@ export const DATA = {
   initials: "SG",
   url: "https://gutentag.world",
   tagline: "Gutentag, World",
-  currentRole: "Developer Relations Engineer",
-  currentCompany: "Audius",
+  currentRole: "Sr. Developer Relations Engineer",
+  currentCompany: "Trunk",
   get description(): string {
     return `Hi! I'm ${this.name}, ${this.currentRole} at ${this.currentCompany}. I love building things and helping people.`;
   },
@@ -52,6 +52,17 @@ export const DATA = {
   },
   work: [
     {
+      company: "Trunk",
+      href: "https://trunk.io",
+      badges: [],
+      location: "Remote",
+      title: "Sr. Developer Relations Engineer",
+      logoUrl: "/trunk.png",
+      start: "January 2025",
+      end: "Present",
+      description: "",
+    },
+    {
       company: "Audius",
       href: "https://audius.co",
       badges: [],
@@ -59,7 +70,7 @@ export const DATA = {
       title: "Developer Relations Engineer",
       logoUrl: "/audius.png",
       start: "December 2023",
-      end: "Present",
+      end: "December 2024",
       description: "",
     },
     {
@@ -72,7 +83,7 @@ export const DATA = {
       start: "May 2022",
       end: "December 2023",
       description:
-        "Collaborated with device manufacturers and developers, fostering a community-driven ecosystem and aligning internal engineering efforts with developer needs. Led documentation initiatives and facilitated knowledge sharing by addressing developer questions and gathering community insights. Provided support in Community Management and Data Analytics, contributing to the ecosystem’s broader success beyond technical aspects.",
+        "",
     },
     {
       company: "Penumbra, Inc",
@@ -84,7 +95,7 @@ export const DATA = {
       start: "September 2018",
       end: "August 2022",
       description:
-        "Founded and led a developer relations team, improving onboarding, collaboration, and issue resolution while introducing a partner developer portal for better resources and SDK best practices. Engineered an optimized asset management pipeline for Unreal Engine and created tutorials for integrating in-house pipelines with third-party software workflows.",
+        "",
     },
     {
       company: "Industrial Light & Magic",
@@ -96,7 +107,7 @@ export const DATA = {
       start: "November 2014",
       end: "February 2018",
       description:
-        "Tailored scripts for creature and animation projects to enhance workflow efficiency and crafted comprehensive documentation for proprietary and external software integration. Built custom solutions for individual workflow integrations on a show-by-show basis for animators and layout artists. Created versatile, reusable rigging setups for internal software, ensuring consistent and efficient rigging processes, and oversaw motion capture shoots and reference photography for various productions.",
+        "",
     },
     {
       company: "Industrial Light & Magic",
@@ -108,7 +119,7 @@ export const DATA = {
       start: "September 2013",
       end: "November 2014",
       description:
-        "Collaborated on developing monitoring and analysis tools to enable real-time tracking of rendering progress and proactive issue detection.",
+        "",
     },
   ],
   education: [
