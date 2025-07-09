@@ -41,7 +41,7 @@ export const DATA = {
         icon: Icons.mastodon,
       },
       BlueSky: {
-        url: "https://bsky.app/profile/samgutentag.com",
+        url: "https://bsky.app/profile/samgutentag.bsky.social",
         icon: Icons.bluesky,
       },
       // Youtube: {
