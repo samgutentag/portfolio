@@ -8,7 +8,7 @@ export const DATA = {
   currentRole: "Sr. Developer Relations Engineer",
   currentCompany: "Trunk",
   get description(): string {
-    return `Hi! I'm ${this.name}, ${this.currentRole} at ${this.currentCompany}. I love building things and helping people.`;
+    return `Hi! I'm ${this.name}, ${this.currentRole} at ${this.currentCompany}.`;
   },
   summary: "Gutentag, World",
   avatarUrl: "/me.png",
@@ -45,9 +45,13 @@ export const DATA = {
         icon: Icons.bluesky,
       },
       // Youtube: {
-      //   url: "https://youtube.com/c/dillionverma",
+      //   url: "https://www.youtube.com/c/samgutentag",
       //   icon: Icons.youtube,
       // },
+      Projects: {
+        url: "/master-react",
+        icon: Icons.react,
+      },
     },
   },
   work: [
