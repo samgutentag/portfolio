@@ -4,6 +4,11 @@ import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import * as Icons from "@/components/icons";
+import { Separator } from "@/components/ui/separator";
 
 export async function generateMetadata({
   params,
@@ -94,9 +99,83 @@ export default async function Blog({
         </Suspense>
       </div>
       <article
-        className="prose dark:prose-invert"
+        className="prose dark:prose-invert mt-6"
         dangerouslySetInnerHTML={{ __html: post.source }}
       ></article>
+      {Array.isArray(post.metadata.tags) && post.metadata.tags.length > 0 && (
+        <>
+          <Separator className="my-8" />
+          <div className="mt-8">
+            <div className="flex items-center flex-wrap gap-2 mb-4">
+              <h2 className="text-sm font-semibold text-muted-foreground mr-2">
+                Tags:
+              </h2>
+              {post.metadata.tags.map((tag: string) => (
+                <Link key={tag} href={`/blog/tag/${encodeURIComponent(tag)}`}>
+                  <Badge variant="secondary">{tag}</Badge>
+                </Link>
+              ))}
+            </div>
+            <div className="flex gap-2 items-center mt-2">
+              <span className="text-sm font-semibold text-muted-foreground mr-2">
+                Share:
+              </span>
+              {/* X share */}
+              <Link
+                href={`https://x.com/intent/tweet?url=${encodeURIComponent(`${DATA.url}/blog/${post.slug}`)}&text=${encodeURIComponent(`Check out this post from @samgutentag: ${post.metadata.title}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" size="icon" aria-label="Share on X">
+                  <Icons.Icons.x className="size-4" />
+                </Button>
+              </Link>
+              {/* Mastodon share */}
+              <Link
+                href={`https://mastodon.social/share?text=${encodeURIComponent(`Check out this post from @samgutentag: ${post.metadata.title} ${DATA.url}/blog/${post.slug}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Share on Mastodon"
+                >
+                  <Icons.Icons.mastodon className="size-4" />
+                </Button>
+              </Link>
+              {/* Bluesky share */}
+              <Link
+                href={`https://bsky.app/intent/compose?text=${encodeURIComponent(`Check out this post from @samgutentag.bsky.social: ${post.metadata.title} ${DATA.url}/blog/${post.slug}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Share on Bluesky"
+                >
+                  <Icons.Icons.bluesky className="size-4" />
+                </Button>
+              </Link>
+              {/* Email share */}
+              <Link
+                href={`mailto:?subject=${encodeURIComponent(post.metadata.title)}&body=${encodeURIComponent(`Check out this post from @samgutentag: ${post.metadata.title} - ${DATA.url}/blog/${post.slug}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Share by Email"
+                >
+                  <Icons.Icons.email className="size-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
     </section>
   );
 }
