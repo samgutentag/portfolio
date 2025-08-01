@@ -1,0 +1,164 @@
+---
+title: "⌨️ Home to VSCode"
+summary: "Why am I paying double for Cursor (or any other VSCode fork)?"
+publishedAt: "2025-08-01"
+image: "/blog/2025-08-01/always-has-been-vscode.png"
+tags: ["vscode", "cursor", "AI", "developer", "tech"]
+---
+
+Let’s cut to the chase: if you’re building one-off tools, small scripts, or experimenting with new ideas, [VSCode][vscode] with GitHub Copilot (GPT-4.1) can get you as far as [Cursor][cursor], at half the price.
+Both tools use the same model under the hood. So why are we paying more for Cursor?
+
+![always-has-been-meme][always-has-been]
+
+---
+
+## Round 1: Initial Code Generation
+
+To test this, I gave both editors the same task, starting from an empty project directory and the same initial prompt.
+
+> The Task: Build a Meal Plan JSON file from a Calendar Feed
+
+![input-output][input-output]
+
+Prompt given to both VSCode and Cursor using GPT-4.1, clean installations, no custom configurations or rules:
+
+```txt title="Prompt"
+Build a python tool to extract calendar events from a google calendar feed, use the start time to classify each event as “breakfast”, “lunch” or “dinner”
+
+important facts:
+
+- breakfast starts at 8am
+- lunch starts at 11am
+- dinner starts at 5pm
+- the calendar feed should be stored as an environment variable
+- collect only data from the current week, starting on monday, ending on the next sunday
+- if no meal event is found, use an empty string
+- output a final `meal.json` file with the format
+
+{
+    <day of week index> : {
+        “breakfast”: <breakfast event title>,
+        “lunch”: <lunch event title>,
+        “dinner”: <dinner event title>,
+    }
+}
+```
+
+### VSCode + Copilot
+
+- Wrote the script directly into a file.
+- Prompted me to install missing packages automatically.
+- Didn’t mention a `.env` file until asked.
+  - After clarification, nailed the `.env` setup and gave precise steps to use dotenv.
+
+### Cursor
+
+- Gave a detailed plan before coding.
+- Listed out the required libraries.
+- Wrote the script in the chat, not in a file, required me to chat “yes” to write the file.
+- Suggested usage steps, but didn’t offer automatic actions.
+- Needed a follow-up prompt to handle `.env` file storage.
+
+---
+
+## Round 2: Virtual Environment + .env Support
+
+When I prompted both editors to “create a virtual environment to store the calendar feed variable,” neither assumed I meant .env style secrets. Fair enough, I followed up with:
+
+```txt title="Prompt"
+Use a `.env` file to store the environment variables instead.
+```
+
+After that:
+
+### VSCode
+
+Gave one-click install instructions, updated the code, and included .env support in a tidy package.
+
+### Cursor
+
+Explained everything in a verbose, step-by-step way, useful for learning, slower for execution.
+
+---
+
+## Round 3: Requirements
+
+When prompted to create a requirements file, both tools successfully:
+
+```txt title="Prompt"
+created a `requirements.txt` for this script
+```
+
+- Created a `requirements.txt`
+- Ran the script and generated a correctly formatted `meal.json`
+
+✅ They both nailed it.
+
+---
+
+## Round 4: Adding Features
+
+Add another entry to the output JSON file with the key "today" that includes meals for the current day, along with a "Date" field in the format: "July 30, 2025".
+
+```txt title="Prompt"
+Add another entry to the output json file with the key "today", the meals in this entry should be for the current calendar day and include an additional value "Date" with the current date in format Like this "July, 30, 2025"
+```
+
+Both editors delivered perfectly.
+
+✅ No issues. One-shot success.
+
+---
+
+## Round 5: Debugging Timezone Bugs
+
+Once I started testing real calendar feeds, I noticed this bug:
+
+> Breakfast was mapped to “lunch”, lunch to “dinner”, and dinner wasn’t showing up at all.
+
+The root cause? Google Calendar feeds (.ics) are in UTC, while my meal times were defined in PST.
+
+So I prompted:
+
+```txt title="Prompt"
+The calendar feed is in UTC and the defined meal start hours are in PST. Convert the times and map to the correct meals.
+```
+
+Again, both editors corrected the logic correctly after the hint.
+
+## Comparing Output Scripts
+
+At this point, I asked both tools to generate Mermaid diagrams for their logic flow.
+
+![logic-flows][logic-flows]
+
+Result? Nearly identical, which makes sense, given they are using the same underlying LLM.
+
+> Minor differences: VSCode added a check to prevent overwriting existing values.
+
+But overall, the core logic and structure were the same.
+
+## Editor Vibes: VSCode vs Cursor
+
+When comparing VSCode with Copilot to Cursor, the differences come down more to style than substance, especially for quick tasks like this one.
+
+> Check out the VSCode version and the Cursor version on GitHub.
+
+VSCode’s chat lives neatly in the sidebar, making it easy to review your prompt history. It offers big, clear “do the thing” buttons and takes action directly in your files, which makes it feel snappy and task-focused.
+
+Cursor, on the other hand, leans more tutorial-like. It’s verbose, tends to explain its reasoning, and interacts through conversational suggestions rather than buttons. This makes Cursor great for learning or pairing with an AI assistant, but when it comes to just getting the job done, both tools ultimately produce the same results.
+
+## Take Away
+
+I built this entire script, from zero to a working meal.json generator, in roughly 15 minutes.
+
+So let me ask again: **Why are we paying for Cursor?**
+
+If you’re already deep in the Cursor workflow, awesome. But if you’re working on quick tasks or scripts, VSCode with Copilot gets you there just the same and you might already be paying for it via GitHub.
+
+[vscode]: https://code.visualstudio.com/
+[cursor]: https://cursor.com/
+[always-has-been]: /blog/2025-08-01/always-has-been-vscode.png
+[logic-flows]: /blog/2025-08-01/logic-flows.png
+[input-output]: /blog/2025-08-01/input-output.png
