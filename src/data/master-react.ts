@@ -1,23 +1,72 @@
 import fs from "fs";
-import path from "path";
 import matter from "gray-matter";
-import { markdownToHTML } from "@/data/blog";
+import path from "path";
+import rehypePrettyCode from "rehype-pretty-code";
+import rehypeStringify from "rehype-stringify";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import { unified } from "unified";
 
-export async function getMasterReactPosts() {
-  const dir = path.join(process.cwd(), "content", "master-react");
-  const files = fs.readdirSync(dir).filter((file) => file.endsWith(".mdx"));
+type Metadata = {
+  title: string;
+  publishedAt: string;
+  summary: string;
+  image?: string;
+};
+
+function getMDXFiles(dir: string) {
+  return fs.readdirSync(dir).filter((file) => path.extname(file) === ".mdx");
+}
+
+export async function markdownToHTML(markdown: string) {
+  const p = await unified()
+    .use(remarkParse)
+    .use(remarkRehype)
+    .use(rehypePrettyCode, {
+      // https://rehype-pretty.pages.dev/#usage
+      theme: {
+        light: "min-light",
+        dark: "min-dark",
+      },
+      keepBackground: false,
+    })
+    .use(rehypeStringify)
+    .process(markdown);
+
+  return p.toString();
+}
+
+export async function getPost(slug: string) {
+  const filePath = path.join("content", "master-react", `${slug}.mdx`);
+  let source = fs.readFileSync(filePath, "utf-8");
+  const { content: rawContent, data: metadata } = matter(source);
+  const content = await markdownToHTML(rawContent);
+  return {
+    source: content,
+    metadata,
+    slug,
+  };
+}
+
+async function getAllPosts(dir: string) {
+  let mdxFiles = getMDXFiles(dir);
   return Promise.all(
-    files.map(async (file) => {
-      const slug = path.basename(file, ".mdx");
-      const filePath = path.join(dir, file);
-      const source = fs.readFileSync(filePath, "utf-8");
-      const { content: rawContent, data: metadata } = matter(source);
-      const content = await markdownToHTML(rawContent);
+    mdxFiles.map(async (file) => {
+      let slug = path.basename(file, path.extname(file));
+      let { metadata, source } = await getPost(slug);
       return {
-        source: content,
         metadata,
         slug,
+        source,
       };
     }),
   );
+}
+
+export async function getMasterReactPosts() {
+  const posts = await getAllPosts(
+    path.join(process.cwd(), "content", "master-react"),
+  );
+  // Filter out posts with unpublished: true in frontmatter
+  return posts.filter((post) => !(post.metadata.unpublished === true));
 }

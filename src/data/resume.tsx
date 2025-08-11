@@ -48,10 +48,10 @@ export const DATA = {
       //   url: "https://www.youtube.com/c/samgutentag",
       //   icon: Icons.youtube,
       // },
-      Projects: {
-        url: "/master-react",
-        icon: Icons.react,
-      },
+      // Projects: {
+      //   url: "/master-react",
+      //   icon: Icons.react,
+      // },
     },
   },
   work: [
@@ -86,11 +86,10 @@ export const DATA = {
       logoUrl: "/helium-foundation.svg",
       start: "May 2022",
       end: "December 2023",
-      description:
-        "",
+      description: "",
     },
     {
-      company: "Penumbra, Inc",
+      company: "Penumbra, Inc - REAL System",
       href: "https://www.penumbrainc.com",
       badges: [],
       location: "Alameda, CA",
@@ -98,8 +97,7 @@ export const DATA = {
       logoUrl: "/penumbra.png",
       start: "September 2018",
       end: "August 2022",
-      description:
-        "",
+      description: "",
     },
     {
       company: "Industrial Light & Magic",
@@ -110,8 +108,7 @@ export const DATA = {
       logoUrl: "/ilm.png",
       start: "November 2014",
       end: "February 2018",
-      description:
-        "",
+      description: "",
     },
     {
       company: "Industrial Light & Magic",
@@ -122,8 +119,7 @@ export const DATA = {
       logoUrl: "/ilm.png",
       start: "September 2013",
       end: "November 2014",
-      description:
-        "",
+      description: "",
     },
   ],
   education: [

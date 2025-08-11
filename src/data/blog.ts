@@ -64,5 +64,7 @@ async function getAllPosts(dir: string) {
 }
 
 export async function getBlogPosts() {
-  return getAllPosts(path.join(process.cwd(), "content", "blog"));
+  const posts = await getAllPosts(path.join(process.cwd(), "content", "blog"));
+  // Filter out posts with unpublished: true in frontmatter
+  return posts.filter((post) => !(post.metadata.unpublished === true));
 }
