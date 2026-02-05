@@ -1,8 +1,6 @@
 ---
-title: 060-capture-the-joy-of-your-favorite-food
-summary: ""
-publishedAt: ""
+title: 'Capture the joy of your favorite food, song, or hobby'
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Capture the joy of your favorite food, song, or hobby
 

@@ -1,8 +1,6 @@
 ---
-title: 195-when-was-the-last-time-you-laughed-until
-summary: ""
-publishedAt: ""
+title: When was the last time you laughed until you cried
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: When was the last time you laughed until you cried
 

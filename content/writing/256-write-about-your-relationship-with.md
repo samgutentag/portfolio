@@ -1,8 +1,6 @@
 ---
-title: 256-write-about-your-relationship-with
-summary: ""
-publishedAt: ""
+title: Write about your relationship with boredom
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about your relationship with boredom
 

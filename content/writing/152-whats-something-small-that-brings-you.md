@@ -1,8 +1,6 @@
 ---
-title: 152-whats-something-small-that-brings-you
-summary: ""
-publishedAt: ""
+title: Whats something small that brings you joy
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats something small that brings you joy
 

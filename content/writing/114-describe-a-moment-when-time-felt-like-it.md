@@ -1,8 +1,6 @@
 ---
-title: 114-describe-a-moment-when-time-felt-like-it
-summary: ""
-publishedAt: ""
+title: Describe a moment when time felt like it stopped
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Describe a moment when time felt like it stopped
 

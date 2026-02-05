@@ -1,8 +1,6 @@
 ---
-title: 307-what-happens-when-you-push-past-your
-summary: ""
-publishedAt: ""
+title: What happens when you push past your limits
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What happens when you push past your limits
 

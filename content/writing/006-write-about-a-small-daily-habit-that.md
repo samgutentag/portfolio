@@ -1,8 +1,6 @@
 ---
-title: 006-write-about-a-small-daily-habit-that
-summary: ""
-publishedAt: ""
+title: Write about a small daily habit that actually changed something big
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a small daily habit that actually changed something big
 

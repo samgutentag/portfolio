@@ -1,8 +1,6 @@
 ---
-title: 236-write-a-short-scene-about-something
-summary: ""
-publishedAt: ""
+title: Write a short scene about something magical
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write a short scene about something magical
 

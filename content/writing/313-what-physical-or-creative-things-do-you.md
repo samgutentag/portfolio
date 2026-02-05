@@ -1,8 +1,6 @@
 ---
-title: 313-what-physical-or-creative-things-do-you
-summary: ""
-publishedAt: ""
+title: What physical or creative things do you want to leave behind
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What physical or creative things do you want to leave behind
 

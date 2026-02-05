@@ -1,8 +1,6 @@
 ---
-title: 122-describe-your-dream-joband-why
-summary: ""
-publishedAt: ""
+title: Describe your dream job—and why
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Describe your dream job—and why
 

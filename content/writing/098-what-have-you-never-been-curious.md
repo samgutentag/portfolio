@@ -1,8 +1,6 @@
 ---
-title: 098-what-have-you-never-been-curious
-summary: ""
-publishedAt: ""
+title: What have you never been curious about—and why
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What have you never been curious about—and why
 

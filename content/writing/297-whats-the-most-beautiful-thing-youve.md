@@ -1,8 +1,6 @@
 ---
-title: 297-whats-the-most-beautiful-thing-youve
-summary: ""
-publishedAt: ""
+title: Whats the most beautiful thing youve seen this year
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats the most beautiful thing youve seen this year
 

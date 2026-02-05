@@ -1,8 +1,6 @@
 ---
-title: 158-how-do-you-stay-connected-to-people-far
-summary: ""
-publishedAt: ""
+title: How do you stay connected to people far away
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: How do you stay connected to people far away
 

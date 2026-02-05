@@ -1,8 +1,6 @@
 ---
-title: 215-whats-a-question-someone-asked-that
-summary: ""
-publishedAt: ""
+title: Whats a question someone asked that changed your perspective
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats a question someone asked that changed your perspective
 

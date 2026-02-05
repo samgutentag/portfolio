@@ -1,8 +1,6 @@
 ---
-title: 302-whats-a-limitation-youve-turned-into
-summary: ""
-publishedAt: ""
+title: Whats a limitation youve turned into strength
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats a limitation youve turned into strength
 

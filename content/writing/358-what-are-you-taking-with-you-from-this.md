@@ -1,8 +1,6 @@
 ---
-title: 358-what-are-you-taking-with-you-from-this
-summary: ""
-publishedAt: ""
+title: What are you taking with you from this year
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What are you taking with you from this year
 

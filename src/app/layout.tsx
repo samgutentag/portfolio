@@ -1,53 +1,48 @@
-import Navbar from "@/components/navbar";
-import { ThemeProvider } from "@/components/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { DATA } from "@/data/resume";
-import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Inter as FontSans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Nav } from "@/components/nav";
 
-const fontSans = FontSans({
+/**
+ * next/font/google downloads Inter at build time and self-hosts it.
+ * The `variable` option injects a CSS custom property (`--font-inter`)
+ * that we reference in globals.css via @theme inline.
+ */
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
+/**
+ * Next.js Metadata API — statically analyzable, no <Head> component needed.
+ * `title.template` adds " | Sam Gutentag" to every page's <title> automatically.
+ * `metadataBase` is required for resolving relative Open Graph URLs.
+ */
 export const metadata: Metadata = {
-  metadataBase: new URL(DATA.url),
   title: {
-    default: DATA.summary,
-    template: `%s | ${DATA.name}`,
+    default: "Sam Gutentag",
+    template: "%s | Sam Gutentag",
   },
-  description: DATA.description,
+  description:
+    "Sr. Developer Relations Engineer. Writing about dev, tech, and building things.",
+  metadataBase: new URL("https://gutentag.world"),
+  robots: { index: true, follow: true },
   openGraph: {
-    title: `${DATA.name}`,
-    description: DATA.description,
-    url: DATA.url,
-    siteName: `${DATA.name}`,
-    locale: "en_US",
     type: "website",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
+    locale: "en_US",
+    url: "https://gutentag.world",
+    title: "Sam Gutentag",
+    description:
+      "Sr. Developer Relations Engineer. Writing about dev, tech, and building things.",
+    siteName: "Sam Gutentag",
   },
   twitter: {
-    title: `${DATA.name}`,
     card: "summary_large_image",
-  },
-  verification: {
-    google:
-      "google-site-verification=teBmh2P9Uqmxo4lRKsTpPxHe0eWFQaGl0wXPypIWd4A",
-    yandex: "",
+    title: "Sam Gutentag",
+    description:
+      "Sr. Developer Relations Engineer. Writing about dev, tech, and building things.",
   },
 };
 
@@ -57,21 +52,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    /*
+     * suppressHydrationWarning is required here because next-themes
+     * sets the `dark` class on <html> client-side after hydration.
+     * Without it, React warns about a mismatch between server and client HTML.
+     */
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased max-w-2xl mx-auto py-12 sm:py-24 px-6",
-          fontSans.variable,
-        )}
-      >
-        <ThemeProvider attribute="class" defaultTheme="light">
-          <TooltipProvider delayDuration={0}>
-            {children}
-            <Navbar />
-          </TooltipProvider>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        {/*
+         * ThemeProvider wraps the entire app.
+         * attribute="class" → adds/removes "dark" class on <html>
+         * defaultTheme="system" → reads prefers-color-scheme on first load
+         * enableSystem → keeps watching the OS preference for changes
+         */}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Nav />
+          {/*
+           * max-w-2xl (672px) keeps prose readable.
+           * pb-24 gives breathing room at the bottom of every page.
+           */}
+          <main className="mx-auto max-w-2xl px-6 pb-24">{children}</main>
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

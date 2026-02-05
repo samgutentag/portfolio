@@ -1,8 +1,6 @@
 ---
-title: 059-write-about-someone-who-brings-you-joy
-summary: ""
-publishedAt: ""
+title: Write about someone who brings you joy without trying
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about someone who brings you joy without trying
 

@@ -1,8 +1,6 @@
 ---
-title: 271-describe-something-illuminated
-summary: ""
-publishedAt: ""
+title: Describe something illuminated
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Describe something illuminated
 

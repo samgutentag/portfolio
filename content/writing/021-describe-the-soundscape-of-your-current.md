@@ -1,8 +1,6 @@
 ---
-title: 021-describe-the-soundscape-of-your-current
-summary: ""
-publishedAt: ""
+title: Describe the soundscape of your current environment
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Describe the soundscape of your current environment
 

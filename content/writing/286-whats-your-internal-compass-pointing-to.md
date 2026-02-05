@@ -1,8 +1,6 @@
 ---
-title: 286-whats-your-internal-compass-pointing-to
-summary: ""
-publishedAt: ""
+title: Whats your internal compass pointing to now
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats your internal compass pointing to now
 

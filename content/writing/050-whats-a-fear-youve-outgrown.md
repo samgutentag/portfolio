@@ -1,8 +1,6 @@
 ---
-title: 050-whats-a-fear-youve-outgrown
-summary: ""
-publishedAt: ""
+title: Whats a fear youve outgrown
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats a fear youve outgrown
 

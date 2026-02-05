@@ -1,42 +1,71 @@
-import { getBlogPosts } from "@/data/blog";
-import Link from "next/link";
-import { formatDate } from "@/lib/utils";
+/**
+ * Tag filtered blog listing.
+ * Shows all posts that have a matching tag in their frontmatter.
+ */
 
-export default async function TagPage({ params }: { params: { tag: string } }) {
-  const tag = decodeURIComponent(params.tag);
-  const posts = await getBlogPosts();
-  const filtered = posts.filter(
-    (post: any) =>
-      Array.isArray(post.metadata.tags) && post.metadata.tags.includes(tag),
-  );
+import Link from "next/link";
+import type { Metadata } from "next";
+import { getBlogPosts } from "@/data/blog";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tag: string }>;
+}): Promise<Metadata> {
+  const { tag } = await params;
+  return {
+    title: `#${tag}`,
+    description: `Posts tagged with #${tag}`,
+  };
+}
+
+export default async function TagPage({
+  params,
+}: {
+  params: Promise<{ tag: string }>;
+}) {
+  const { tag } = await params;
+  const allPosts = await getBlogPosts();
+  const posts = allPosts.filter((post) => post.metadata.tags?.includes(tag));
 
   return (
-    <section>
-      <h1 className="font-medium text-2xl mb-8 tracking-tighter">
-        Posts tagged with &quot;{tag}&quot;
+    <div className="pt-4">
+      <div className="mb-8">
+        <Link
+          href="/blog"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Back to blog
+        </Link>
+      </div>
+
+      <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+        #{tag}
       </h1>
-      {filtered.length === 0 ? (
-        <p>No posts found for this tag.</p>
-      ) : (
-        <ul className="space-y-6">
-          {filtered.map((post: any) => (
-            <li key={post.slug}>
-              <Link
-                href={`/blog/${post.slug}`}
-                className="text-lg font-semibold hover:underline"
-              >
-                {post.metadata.title}
-              </Link>
-              <div className="text-sm text-muted-foreground">
-                {post.metadata.summary}
-              </div>
-              <div className="text-xs text-neutral-500 mt-1">
-                {formatDate(post.metadata.publishedAt)}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {posts.length} {posts.length === 1 ? "post" : "posts"}
+      </p>
+
+      <div className="mt-8 space-y-0">
+        {posts.map((post) => (
+          <Link
+            key={post.slug}
+            href={`/blog/${post.slug}`}
+            className="group flex items-baseline justify-between gap-4 py-3 border-b border-border last:border-0"
+          >
+            <span className="text-base text-foreground group-hover:text-accent transition-colors">
+              {post.metadata.title}
+            </span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
+              {new Date(post.metadata.publishedAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }

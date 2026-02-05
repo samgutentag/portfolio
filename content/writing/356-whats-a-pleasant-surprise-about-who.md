@@ -1,8 +1,6 @@
 ---
-title: 356-whats-a-pleasant-surprise-about-who
-summary: ""
-publishedAt: ""
+title: Whats a pleasant surprise about who youve become
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats a pleasant surprise about who youve become
 

@@ -1,8 +1,6 @@
 ---
-title: 037-describe-a-change-you-resisted-and-what
-summary: ""
-publishedAt: ""
+title: 'Describe a change you resisted, and what happened next'
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Describe a change you resisted, and what happened next
 

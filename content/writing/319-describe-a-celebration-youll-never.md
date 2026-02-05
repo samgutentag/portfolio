@@ -1,8 +1,6 @@
 ---
-title: 319-describe-a-celebration-youll-never
-summary: ""
-publishedAt: ""
+title: Describe a celebration youll never forget
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Describe a celebration youll never forget
 

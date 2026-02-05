@@ -1,8 +1,6 @@
 ---
-title: 263-write-about-personal-power-versus
-summary: ""
-publishedAt: ""
+title: Write about personal power versus positional power
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about personal power versus positional power
 

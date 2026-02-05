@@ -1,8 +1,6 @@
 ---
-title: 354-whats-something-wonderful-you-didnt-see
-summary: ""
-publishedAt: ""
+title: Whats something wonderful you didnt see coming
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats something wonderful you didnt see coming
 

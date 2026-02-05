@@ -1,8 +1,6 @@
 ---
-title: 070-whats-something-youre-quietly-ambitious
-summary: ""
-publishedAt: ""
+title: Whats something youre quietly ambitious about
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats something youre quietly ambitious about
 

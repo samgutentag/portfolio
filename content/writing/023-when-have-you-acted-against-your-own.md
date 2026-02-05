@@ -1,8 +1,6 @@
 ---
-title: 023-when-have-you-acted-against-your-own
-summary: ""
-publishedAt: ""
+title: When have you acted against your own beliefs
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: When have you acted against your own beliefs
 

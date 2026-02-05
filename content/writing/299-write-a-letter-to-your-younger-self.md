@@ -1,8 +1,6 @@
 ---
-title: 299-write-a-letter-to-your-younger-self
-summary: ""
-publishedAt: ""
+title: Write a letter to your younger self encouraging curiosity
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write a letter to your younger self encouraging curiosity
 

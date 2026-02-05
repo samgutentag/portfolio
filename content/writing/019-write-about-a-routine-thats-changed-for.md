@@ -1,8 +1,6 @@
 ---
-title: 019-write-about-a-routine-thats-changed-for
-summary: ""
-publishedAt: ""
+title: Write about a routine thats changed for you recently
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a routine thats changed for you recently
 

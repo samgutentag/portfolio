@@ -1,8 +1,6 @@
 ---
-title: 081-write-about-love-in-a-way-that-doesnt
-summary: ""
-publishedAt: ""
+title: Write about love in a way that doesnt use the word love
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about love in a way that doesnt use the word love
 

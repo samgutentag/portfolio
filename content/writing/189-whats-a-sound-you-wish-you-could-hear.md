@@ -1,8 +1,6 @@
 ---
-title: 189-whats-a-sound-you-wish-you-could-hear
-summary: ""
-publishedAt: ""
+title: Whats a sound you wish you could hear again
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats a sound you wish you could hear again
 

@@ -1,8 +1,6 @@
 ---
-title: 103-how-do-you-define-success-without
-summary: ""
-publishedAt: ""
+title: How do you define success without referencing others
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: How do you define success without referencing others
 

@@ -1,8 +1,6 @@
 ---
-title: 054-write-about-a-fear-youve-never-voiced
-summary: ""
-publishedAt: ""
+title: Write about a fear youve never voiced out loud
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a fear youve never voiced out loud
 

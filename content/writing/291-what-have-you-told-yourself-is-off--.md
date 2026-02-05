@@ -1,8 +1,6 @@
 ---
-title: 291-what-have-you-told-yourself-is-off--
-summary: ""
-publishedAt: ""
+title: What have you told yourself is off - limits
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What have you told yourself is off - limits
 

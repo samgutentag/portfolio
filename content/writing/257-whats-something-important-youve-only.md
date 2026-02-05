@@ -1,8 +1,6 @@
 ---
-title: 257-whats-something-important-youve-only
-summary: ""
-publishedAt: ""
+title: Whats something important youve only noticed in stillness
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats something important youve only noticed in stillness
 

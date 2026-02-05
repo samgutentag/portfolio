@@ -1,8 +1,6 @@
 ---
-title: 365-whats-your-final-reflection-from-this
-summary: ""
-publishedAt: ""
+title: Whats your final reflection from this year of writing
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats your final reflection from this year of writing
 

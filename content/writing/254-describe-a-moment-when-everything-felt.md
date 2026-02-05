@@ -1,8 +1,6 @@
 ---
-title: 254-describe-a-moment-when-everything-felt
-summary: ""
-publishedAt: ""
+title: Describe a moment when everything felt calm
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Describe a moment when everything felt calm
 

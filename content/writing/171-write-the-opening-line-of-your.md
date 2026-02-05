@@ -1,8 +1,6 @@
 ---
-title: 171-write-the-opening-line-of-your
-summary: ""
-publishedAt: ""
+title: Write the opening line of your autobiography
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write the opening line of your autobiography
 

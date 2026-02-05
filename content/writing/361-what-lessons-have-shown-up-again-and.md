@@ -1,8 +1,6 @@
 ---
-title: 361-what-lessons-have-shown-up-again-and
-summary: ""
-publishedAt: ""
+title: What lessons have shown up again and again
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What lessons have shown up again and again
 

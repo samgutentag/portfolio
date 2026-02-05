@@ -1,8 +1,6 @@
 ---
-title: 039-write-about-a-time-you-outgrew-something
-summary: ""
-publishedAt: ""
+title: Write about a time you outgrew something or someone
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a time you outgrew something or someone
 

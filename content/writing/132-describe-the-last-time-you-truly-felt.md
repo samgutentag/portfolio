@@ -1,8 +1,6 @@
 ---
-title: 132-describe-the-last-time-you-truly-felt
-summary: ""
-publishedAt: ""
+title: Describe the last time you truly felt outside
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Describe the last time you truly felt outside
 

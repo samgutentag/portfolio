@@ -1,8 +1,6 @@
 ---
-title: 270-whats-the-light-at-the-end-of-your
-summary: ""
-publishedAt: ""
+title: Whats the light at the end of your tunnel
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats the light at the end of your tunnel
 

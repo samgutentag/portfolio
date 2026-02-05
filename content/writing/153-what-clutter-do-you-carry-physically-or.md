@@ -1,8 +1,6 @@
 ---
-title: 153-what-clutter-do-you-carry-physically-or
-summary: ""
-publishedAt: ""
+title: What clutter do you carry (physically or mentally)
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What clutter do you carry (physically or mentally)
 

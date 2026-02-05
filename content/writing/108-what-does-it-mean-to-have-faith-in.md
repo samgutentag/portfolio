@@ -1,8 +1,6 @@
 ---
-title: 108-what-does-it-mean-to-have-faith-in
-summary: ""
-publishedAt: ""
+title: What does it mean to have faith in something
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What does it mean to have faith in something
 

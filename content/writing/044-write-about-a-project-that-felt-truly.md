@@ -1,8 +1,6 @@
 ---
-title: 044-write-about-a-project-that-felt-truly
-summary: ""
-publishedAt: ""
+title: Write about a project that felt truly inspired
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a project that felt truly inspired
 

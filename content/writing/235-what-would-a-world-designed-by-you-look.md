@@ -1,8 +1,6 @@
 ---
-title: 235-what-would-a-world-designed-by-you-look
-summary: ""
-publishedAt: ""
+title: What would a world designed by you look like
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What would a world designed by you look like
 

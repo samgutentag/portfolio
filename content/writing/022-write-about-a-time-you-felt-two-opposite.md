@@ -1,8 +1,6 @@
 ---
-title: 022-write-about-a-time-you-felt-two-opposite
-summary: ""
-publishedAt: ""
+title: Write about a time you felt two opposite emotions at once
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a time you felt two opposite emotions at once
 

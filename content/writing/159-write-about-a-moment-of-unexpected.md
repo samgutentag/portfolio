@@ -1,8 +1,6 @@
 ---
-title: 159-write-about-a-moment-of-unexpected
-summary: ""
-publishedAt: ""
+title: Write about a moment of unexpected connection
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a moment of unexpected connection
 

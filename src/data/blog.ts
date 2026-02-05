@@ -1,29 +1,54 @@
+/**
+ * Blog data layer — reads .mdx files from disk, parses frontmatter,
+ * and converts markdown → HTML via a unified pipeline.
+ *
+ * All functions are async and run on the server (Node.js `fs`).
+ * Next.js calls them at build time for static pages or at request time for dynamic ones.
+ *
+ * Pipeline:
+ *   .mdx file  →  gray-matter (split frontmatter + content)
+ *              →  unified / remark-parse (markdown AST)
+ *              →  remark-rehype (markdown AST → HTML AST)
+ *              →  rehype-pretty-code (syntax-highlighted code blocks via shiki)
+ *              →  rehype-stringify (HTML AST → HTML string)
+ */
+
 import fs from "fs";
-import matter from "gray-matter";
 import path from "path";
-import rehypePrettyCode from "rehype-pretty-code";
-import rehypeStringify from "rehype-stringify";
+import matter from "gray-matter";
+import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
-import { unified } from "unified";
+import rehypePrettyCode from "rehype-pretty-code";
+import rehypeStringify from "rehype-stringify";
 
-type Metadata = {
+export type BlogPostMetadata = {
   title: string;
   publishedAt: string;
   summary: string;
+  tags?: string[];
   image?: string;
+  unpublished?: boolean;
 };
 
-function getMDXFiles(dir: string) {
-  return fs.readdirSync(dir).filter((file) => path.extname(file) === ".mdx");
-}
+export type BlogPost = {
+  slug: string;
+  metadata: BlogPostMetadata;
+  source: string; // rendered HTML
+};
 
-export async function markdownToHTML(markdown: string) {
-  const p = await unified()
+const CONTENT_DIR = path.join(process.cwd(), "content", "blog");
+
+/**
+ * Converts a raw markdown string into an HTML string.
+ * rehype-pretty-code handles <pre>/<code> blocks with shiki themes;
+ * keepBackground: false lets us style the background via CSS instead of inline styles.
+ */
+export async function markdownToHTML(markdown: string): Promise<string> {
+  const result = await unified()
     .use(remarkParse)
     .use(remarkRehype)
     .use(rehypePrettyCode, {
-      // https://rehype-pretty.pages.dev/#usage
       theme: {
         light: "min-light",
         dark: "min-dark",
@@ -33,38 +58,47 @@ export async function markdownToHTML(markdown: string) {
     .use(rehypeStringify)
     .process(markdown);
 
-  return p.toString();
+  return result.toString();
 }
 
-export async function getPost(slug: string) {
-  const filePath = path.join("content", "blog", `${slug}.mdx`);
-  let source = fs.readFileSync(filePath, "utf-8");
-  const { content: rawContent, data: metadata } = matter(source);
-  const content = await markdownToHTML(rawContent);
+/**
+ * Reads a single post by slug. Throws if the file doesn't exist.
+ */
+export async function getPost(slug: string): Promise<BlogPost> {
+  const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
+  const source = fs.readFileSync(filePath, "utf-8");
+  const { content, data } = matter(source);
+  const html = await markdownToHTML(content);
+
   return {
-    source: content,
-    metadata,
     slug,
+    metadata: data as BlogPostMetadata,
+    source: html,
   };
 }
 
-async function getAllPosts(dir: string) {
-  let mdxFiles = getMDXFiles(dir);
-  return Promise.all(
-    mdxFiles.map(async (file) => {
-      let slug = path.basename(file, path.extname(file));
-      let { metadata, source } = await getPost(slug);
-      return {
-        metadata,
-        slug,
-        source,
-      };
-    }),
-  );
-}
+/**
+ * Returns all published posts, sorted newest-first.
+ * Posts with `unpublished: true` in their frontmatter are excluded.
+ * Files without a `.mdx` extension (e.g. `.mdx.WIP`, templates) are also skipped.
+ */
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  const files = fs
+    .readdirSync(CONTENT_DIR)
+    .filter((file) => path.extname(file) === ".mdx");
 
-export async function getBlogPosts() {
-  const posts = await getAllPosts(path.join(process.cwd(), "content", "blog"));
-  // Filter out posts with unpublished: true in frontmatter
-  return posts.filter((post) => !(post.metadata.unpublished === true));
+  const posts = await Promise.all(
+    files.map(async (file) => {
+      const slug = path.basename(file, ".mdx");
+      return getPost(slug);
+    })
+  );
+
+  return posts
+    .filter((post) => !post.metadata.unpublished)
+    .sort(
+      (a, b) =>
+        new Date(b.metadata.publishedAt).getTime() -
+        new Date(a.metadata.publishedAt).getTime()
+    );
 }

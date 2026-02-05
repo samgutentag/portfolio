@@ -1,8 +1,6 @@
 ---
-title: 304-what-limits-are-you-currently-struggling
-summary: ""
-publishedAt: ""
+title: What limits are you currently struggling against
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What limits are you currently struggling against
 

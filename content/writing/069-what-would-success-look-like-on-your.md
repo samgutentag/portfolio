@@ -1,8 +1,6 @@
 ---
-title: 069-what-would-success-look-like-on-your
-summary: ""
-publishedAt: ""
+title: What would success look like on your terms
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What would success look like on your terms
 

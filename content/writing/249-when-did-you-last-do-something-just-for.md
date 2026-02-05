@@ -1,8 +1,6 @@
 ---
-title: 249-when-did-you-last-do-something-just-for
-summary: ""
-publishedAt: ""
+title: When did you last do something just for fun
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: When did you last do something just for fun
 

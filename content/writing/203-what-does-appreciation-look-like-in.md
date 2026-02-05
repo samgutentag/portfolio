@@ -1,8 +1,6 @@
 ---
-title: 203-what-does-appreciation-look-like-in
-summary: ""
-publishedAt: ""
+title: What does appreciation look like in action
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What does appreciation look like in action
 

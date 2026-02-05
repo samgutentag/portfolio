@@ -1,8 +1,6 @@
 ---
-title: 315-what-does-it-mean-to-live-a-meaningful
-summary: ""
-publishedAt: ""
+title: What does it mean to live a meaningful life
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What does it mean to live a meaningful life
 

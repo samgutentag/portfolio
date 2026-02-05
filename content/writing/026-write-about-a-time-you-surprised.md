@@ -1,8 +1,6 @@
 ---
-title: 026-write-about-a-time-you-surprised
-summary: ""
-publishedAt: ""
+title: Write about a time you surprised yourself
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a time you surprised yourself
 

@@ -1,8 +1,6 @@
 ---
-title: 329-what-does-it-mean-to-heal-through
-summary: ""
-publishedAt: ""
+title: What does it mean to heal through creativity
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What does it mean to heal through creativity
 

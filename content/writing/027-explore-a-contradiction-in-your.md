@@ -1,8 +1,6 @@
 ---
-title: 027-explore-a-contradiction-in-your
-summary: ""
-publishedAt: ""
+title: Explore a contradiction in your personality
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Explore a contradiction in your personality
 

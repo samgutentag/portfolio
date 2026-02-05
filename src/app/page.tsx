@@ -1,248 +1,232 @@
-import { HackathonCard } from "@/components/hackathon-card";
-import BlurFade from "@/components/magicui/blur-fade";
-import BlurFadeText from "@/components/magicui/blur-fade-text";
-import { ProjectCard } from "@/components/project-card";
-import { ResumeCard } from "@/components/resume-card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { DATA } from "@/data/resume";
+/**
+ * Homepage — Server Component.
+ *
+ * Fetches blog posts at build/request time (no client-side fetch needed).
+ * Each section is wrapped in <AnimatedSection> (a client component) for
+ * the staggered fade-in, while the rest of the page stays server-rendered.
+ */
+
 import Link from "next/link";
-import Markdown from "react-markdown";
+import Image from "next/image";
+import { DATA } from "@/data/resume";
+import { getBlogPosts } from "@/data/blog";
+import { AnimatedSection } from "@/components/animated-section";
+import {
+  GitHubIcon,
+  LinkedInIcon,
+  XIcon,
+  MastodonIcon,
+  BlueSkyIcon,
+  EmailIcon,
+} from "@/components/icons";
 
-const BLUR_FADE_DELAY = 0.04;
-
-export default function Page() {
+/**
+ * A horizontal rule with a label on the left — the editorial section divider.
+ * "Work ───────" gives clear visual hierarchy without a heading tag.
+ */
+function SectionLabel({ children }: { children: string }) {
   return (
-    <main className="flex flex-col min-h-[100dvh] space-y-10">
-      <section id="hero">
-        <div className="mx-auto w-full max-w-2xl space-y-8">
-          <div className="gap-2 flex justify-between">
-            <div className="flex-col flex flex-1 space-y-1.5">
-              <BlurFadeText
-                delay={BLUR_FADE_DELAY}
-                className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none whitespace-nowrap"
-                yOffset={8}
-                // text={`Hi, I'm ${DATA.name.split(" ")[0]} 👋`}
-                text={`${DATA.tagline} 👋`}
-              />
-              <BlurFadeText
-                className="max-w-[600px] md:text-xl"
-                delay={BLUR_FADE_DELAY}
-                text={DATA.description}
-              />
-            </div>
-            <BlurFade delay={BLUR_FADE_DELAY}>
-              <Avatar className="size-28 border">
-                <AvatarImage alt={DATA.name} src={DATA.avatarUrl} />
-                <AvatarFallback>{DATA.initials}</AvatarFallback>
-              </Avatar>
-            </BlurFade>
-          </div>
-        </div>
-      </section>
-      {/* <section id="about">
-        <BlurFade delay={BLUR_FADE_DELAY * 3}>
-          <h2 className="text-xl font-bold">About</h2>
-        </BlurFade>
-        <BlurFade delay={BLUR_FADE_DELAY * 4}>
-          <Markdown className="prose max-w-full text-pretty font-sans text-sm text-muted-foreground dark:prose-invert">
-            {DATA.summary}
-          </Markdown>
-        </BlurFade>
-      </section> */}
-      <section id="work">
-        <div className="flex min-h-0 flex-col gap-y-3">
-          <BlurFade delay={BLUR_FADE_DELAY * 5}>
-            <h2 className="text-xl font-bold">Work Experience</h2>
-          </BlurFade>
-          {DATA.work.map((work, id) => (
-            <BlurFade
-              key={work.company}
-              delay={BLUR_FADE_DELAY * 6 + id * 0.05}
-            >
-              <ResumeCard
-                key={work.company}
-                logoUrl={work.logoUrl}
-                altText={work.company}
-                title={work.company}
-                subtitle={work.title}
-                href={work.href}
-                badges={work.badges}
-                period={`${work.start} - ${work.end ?? "Present"}`}
-                description={work.description}
-              />
-            </BlurFade>
-          ))}
-        </div>
-      </section>
-      <section id="education">
-        <div className="flex min-h-0 flex-col gap-y-3">
-          <BlurFade delay={BLUR_FADE_DELAY * 7}>
-            <h2 className="text-xl font-bold">Education</h2>
-          </BlurFade>
-          {DATA.education.map((education, id) => (
-            <BlurFade
-              key={education.school}
-              delay={BLUR_FADE_DELAY * 8 + id * 0.05}
-            >
-              <ResumeCard
-                key={education.school}
-                href={education.href}
-                logoUrl={education.logoUrl}
-                altText={education.school}
-                title={education.school}
-                period={`${education.start} - ${education.end}`}
-                description={education.degree}
-              />
-            </BlurFade>
-          ))}
-        </div>
-      </section>
-      {/* <section id="skills">
-        <div className="flex min-h-0 flex-col gap-y-3">
-          <BlurFade delay={BLUR_FADE_DELAY * 9}>
-            <h2 className="text-xl font-bold">Skills</h2>
-          </BlurFade>
-          <div className="flex flex-wrap gap-1">
-            {DATA.skills.map((skill, id) => (
-              <BlurFade key={skill} delay={BLUR_FADE_DELAY * 10 + id * 0.05}>
-                <Badge key={skill}>{skill}</Badge>
-              </BlurFade>
-            ))}
-          </div>
-        </div>
-      </section> */}
-      {/* <section id="projects">
-        <div className="space-y-12 w-full py-12">
-          <BlurFade delay={BLUR_FADE_DELAY * 11}>
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
-                  My Projects
-                </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  Check out my latest work
-                </h2>
-                <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  I&apos;ve worked on a variety of projects, from simple
-                  websites to complex web applications. Here are a few of my
-                  favorites.
-                </p>
-              </div>
-            </div>
-          </BlurFade>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-w-[800px] mx-auto">
-            {DATA.projects.map((project, id) => (
-              <BlurFade
-                key={project.title}
-                delay={BLUR_FADE_DELAY * 12 + id * 0.05}
+    <div className="flex items-center gap-3 mb-8">
+      <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+        {children}
+      </span>
+      <div className="flex-1 border-t border-border" />
+    </div>
+  );
+}
+
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default async function Home() {
+  const posts = await getBlogPosts(); // already sorted newest-first
+  const recentPosts = posts.slice(0, 3);
+
+  return (
+    <div className="space-y-16 pt-4">
+      {/* ─── Hero ─── */}
+      <AnimatedSection delay={0}>
+        <header className="flex items-start gap-6">
+          {/* Profile photo — priority loads it immediately, no layout shift */}
+          <Image
+            src="/me.png"
+            alt={DATA.name}
+            width={96}
+            height={96}
+            className="rounded-full flex-shrink-0"
+            priority
+          />
+
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-foreground">
+              {DATA.name}
+            </h1>
+
+            <p className="mt-3 text-lg text-muted-foreground leading-relaxed">
+              {DATA.currentRole} at{" "}
+              <a
+                href={DATA.companyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:underline"
               >
-                <ProjectCard
-                  href={project.href}
-                  key={project.title}
-                  title={project.title}
-                  description={project.description}
-                  dates={project.dates}
-                  tags={project.technologies}
-                  image={project.image}
-                  video={project.video}
-                  links={project.links}
-                />
-              </BlurFade>
-            ))}
-          </div>
-        </div>
-      </section> */}
-      {/* <section id="hackathons">
-        <div className="space-y-12 w-full py-12">
-          <BlurFade delay={BLUR_FADE_DELAY * 13}>
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
-                  Hackathons
-                </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  I like building things
-                </h2>
-                <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  During my time in university, I attended{" "}
-                  {DATA.hackathons.length}+ hackathons. People from around the
-                  country would come together and build incredible things in 2-3
-                  days. It was eye-opening to see the endless possibilities
-                  brought to life by a group of motivated and passionate
-                  individuals.
-                </p>
-              </div>
-            </div>
-          </BlurFade>
-          <BlurFade delay={BLUR_FADE_DELAY * 14}>
-            <ul className="mb-4 ml-4 divide-y divide-dashed border-l">
-              {DATA.hackathons.map((project, id) => (
-                <BlurFade
-                  key={project.title + project.dates}
-                  delay={BLUR_FADE_DELAY * 15 + id * 0.05}
-                >
-                  <HackathonCard
-                    title={project.title}
-                    description={project.description}
-                    location={project.location}
-                    dates={project.dates}
-                    image={project.image}
-                    links={project.links}
-                  />
-                </BlurFade>
-              ))}
-            </ul>
-          </BlurFade>
-        </div>
-      </section> */}
-      <section id="contact">
-        <div className="grid items-center justify-center gap-4 px-4 text-center md:px-6 w-full py-12">
-          <BlurFade delay={BLUR_FADE_DELAY * 16}>
-            <div className="space-y-3">
-              {/* <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
-                Contact
-              </div> */}
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                Get in Touch
-              </h2>
-              <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                I would love to hear from you!&nbsp;
-                <Link
-                  href={DATA.contact.mailto}
-                  className="text-blue-500 hover:underline"
-                >
-                  Send me an email,
-                </Link>{" "}
-                a message on&nbsp;
-                <Link
-                  href={DATA.contact.social.Mastodon.url}
-                  className="text-blue-500 hover:underline"
-                >
-                  Mastodon
-                </Link>{" "}
-                or send me a&nbsp;
-                <Link
-                  href={DATA.contact.social.X.url}
-                  className="text-blue-500 hover:underline"
-                >
-                  Twitter DM
-                </Link>{" "}
-                and I will respond as soon as I can.
-              </p>
-            </div>
-          </BlurFade>
-        </div>
-        {/* mastodon verification div */}
-        <div>
-          <div style={{ display: "none" }}>
-            <div className="custom-html">Hidden HTML</div>
-            <a rel="me" href="https://mastodon.social/@samgutentag">
-              Mastodon
+                {DATA.currentCompany}
+              </a>
+            </p>
+
+            <p className="mt-2 text-base text-muted-foreground leading-relaxed">
+              {DATA.bio}
+            </p>
+
+            {/* Social links row */}
+            <div className="mt-6 flex items-center gap-4">
+            <a
+              href={DATA.contact.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="GitHub"
+            >
+              <GitHubIcon />
+            </a>
+            <a
+              href={DATA.contact.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="LinkedIn"
+            >
+              <LinkedInIcon />
+            </a>
+            <a
+              href={DATA.contact.x}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="X"
+            >
+              <XIcon />
+            </a>
+            <a
+              href={DATA.contact.mastodon}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Mastodon"
+            >
+              <MastodonIcon />
+            </a>
+            <a
+              href={DATA.contact.bluesky}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Bluesky"
+            >
+              <BlueSkyIcon />
+            </a>
+            <a
+              href={`mailto:${DATA.contact.email}`}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Email"
+            >
+              <EmailIcon />
             </a>
           </div>
-        </div>
-      </section>
-    </main>
+          </div>
+        </header>
+      </AnimatedSection>
+
+      {/* ─── Work Timeline ─── */}
+      <AnimatedSection delay={0.15}>
+        <section>
+          <SectionLabel>Work</SectionLabel>
+
+          <div className="space-y-5">
+            {DATA.work.map((job, i) => (
+              <div key={i} className="flex items-center gap-4">
+                {/*
+                 * 200px white square. object-contain scales the logo to fit
+                 * without cropping; bg-white fills any leftover space.
+                 */}
+                <div className="relative w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden shadow-sm">
+                  <Image
+                    src={job.logoUrl}
+                    alt={job.company}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+
+                {/* Details: date, title, company · location */}
+                <div>
+                  <p className="text-xs text-muted-foreground tracking-wide">
+                    {job.start} – {job.end}
+                  </p>
+                  <p className="text-base font-medium text-foreground mt-1">
+                    {job.title}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    <a
+                      href={job.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      {job.company}
+                    </a>
+                    <span className="mx-1.5">·</span>
+                    {job.location}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </AnimatedSection>
+
+      {/* ─── Latest Writing ─── */}
+      <AnimatedSection delay={0.3}>
+        <section>
+          <SectionLabel>Latest Writing</SectionLabel>
+
+          <div className="space-y-6">
+            {recentPosts.map((post) => (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="group block"
+              >
+                <div className="flex items-baseline justify-between gap-4">
+                  <h3 className="text-base font-medium text-foreground group-hover:text-accent transition-colors">
+                    {post.metadata.title}
+                  </h3>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {formatDate(post.metadata.publishedAt)}
+                  </span>
+                </div>
+                {post.metadata.summary && (
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                    {post.metadata.summary}
+                  </p>
+                )}
+              </Link>
+            ))}
+          </div>
+
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-1 mt-8 text-sm text-accent hover:underline"
+          >
+            Read all posts <span aria-hidden="true">→</span>
+          </Link>
+        </section>
+      </AnimatedSection>
+    </div>
   );
 }

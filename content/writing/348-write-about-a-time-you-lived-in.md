@@ -1,8 +1,6 @@
 ---
-title: 348-write-about-a-time-you-lived-in
-summary: ""
-publishedAt: ""
+title: Write about a time you lived in alignment
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a time you lived in alignment
 

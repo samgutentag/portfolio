@@ -1,8 +1,6 @@
 ---
-title: 169-whats-your-favorite-storyand-why
-summary: ""
-publishedAt: ""
+title: Whats your favorite story—and why
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats your favorite story—and why
 

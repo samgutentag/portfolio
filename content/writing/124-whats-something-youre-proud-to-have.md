@@ -1,8 +1,6 @@
 ---
-title: 124-whats-something-youre-proud-to-have
-summary: ""
-publishedAt: ""
+title: Whats something youre proud to have built
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats something youre proud to have built
 

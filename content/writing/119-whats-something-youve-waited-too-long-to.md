@@ -1,8 +1,6 @@
 ---
-title: 119-whats-something-youve-waited-too-long-to
-summary: ""
-publishedAt: ""
+title: Whats something youve waited too long to do
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats something youve waited too long to do
 

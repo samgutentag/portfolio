@@ -1,8 +1,6 @@
 ---
-title: 091-invent-a-new-routine-that-supports-your
-summary: ""
-publishedAt: ""
+title: Invent a new routine that supports your creativity
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Invent a new routine that supports your creativity
 

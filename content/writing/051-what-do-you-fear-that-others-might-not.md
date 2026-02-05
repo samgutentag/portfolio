@@ -1,8 +1,6 @@
 ---
-title: 051-what-do-you-fear-that-others-might-not
-summary: ""
-publishedAt: ""
+title: What do you fear that others might not understand
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What do you fear that others might not understand
 

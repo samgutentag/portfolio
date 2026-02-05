@@ -1,8 +1,6 @@
 ---
-title: 350-what-does-living-on-purpose-mean-to-you
-summary: ""
-publishedAt: ""
+title: What does living on purpose mean to you
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What does living on purpose mean to you
 

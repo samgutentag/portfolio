@@ -1,8 +1,6 @@
 ---
-title: 012-how-has-your-definition-of-success
-summary: ""
-publishedAt: ""
+title: How has your definition of success changed over time
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: How has your definition of success changed over time
 

@@ -1,8 +1,6 @@
 ---
-title: 274-whats-a-boundary-youve-had-to-set
-summary: ""
-publishedAt: ""
+title: Whats a boundary youve had to set recently
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats a boundary youve had to set recently
 

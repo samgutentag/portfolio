@@ -1,8 +1,6 @@
 ---
-title: 088-whats-the-most-consistent-part-of-your
-summary: ""
-publishedAt: ""
+title: Whats the most consistent part of your routine
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats the most consistent part of your routine
 

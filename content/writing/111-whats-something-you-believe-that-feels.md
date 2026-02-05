@@ -1,8 +1,6 @@
 ---
-title: 111-whats-something-you-believe-that-feels
-summary: ""
-publishedAt: ""
+title: Whats something you believe that feels inconvenient
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats something you believe that feels inconvenient
 

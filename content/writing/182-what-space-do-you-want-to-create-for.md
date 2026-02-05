@@ -1,8 +1,6 @@
 ---
-title: 182-what-space-do-you-want-to-create-for
-summary: ""
-publishedAt: ""
+title: What space do you want to create for others
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What space do you want to create for others
 

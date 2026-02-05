@@ -1,8 +1,6 @@
 ---
-title: 096-whats-the-difference-between-curiosity
-summary: ""
-publishedAt: ""
+title: Whats the difference between curiosity and distraction
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats the difference between curiosity and distraction
 

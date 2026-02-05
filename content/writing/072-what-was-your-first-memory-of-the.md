@@ -1,8 +1,6 @@
 ---
-title: 072-what-was-your-first-memory-of-the
-summary: ""
-publishedAt: ""
+title: What was your first memory of the internet
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What was your first memory of the internet
 

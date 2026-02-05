@@ -1,8 +1,6 @@
 ---
-title: 290-what-would-change-if-you-gave-yourself
-summary: ""
-publishedAt: ""
+title: What would change if you gave yourself full permission
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What would change if you gave yourself full permission
 

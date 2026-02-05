@@ -1,8 +1,6 @@
 ---
-title: 238-whats-something-youve-never-imagined
-summary: ""
-publishedAt: ""
+title: Whats something youve never imagined doing—until now
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats something youve never imagined doing—until now
 

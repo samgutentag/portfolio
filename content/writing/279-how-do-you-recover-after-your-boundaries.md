@@ -1,8 +1,6 @@
 ---
-title: 279-how-do-you-recover-after-your-boundaries
-summary: ""
-publishedAt: ""
+title: How do you recover after your boundaries are crossed
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: How do you recover after your boundaries are crossed
 

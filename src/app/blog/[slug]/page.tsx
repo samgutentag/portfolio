@@ -1,181 +1,115 @@
-import { getPost } from "@/data/blog";
-import { DATA } from "@/data/resume";
-import { formatDate } from "@/lib/utils";
+/**
+ * Individual blog post page.
+ *
+ * Key Next.js concepts at work here:
+ *
+ * 1. generateStaticParams — tells Next.js which slugs exist at build time.
+ *    Each slug becomes a statically generated page (no server needed at runtime).
+ *
+ * 2. generateMetadata — per-page SEO. Next.js merges this with the root metadata
+ *    (title template, OG defaults, etc.) automatically.
+ *
+ * 3. params is a Promise in Next.js 15+ App Router. Always `await` it.
+ *
+ * 4. dangerouslySetInnerHTML renders the pre-built HTML string from our
+ *    unified pipeline. It's "dangerous" in the sense that you're trusting
+ *    the HTML source — safe here because we control all the .mdx files.
+ */
+
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { Suspense } from "react";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import * as Icons from "@/components/icons";
-import { Separator } from "@/components/ui/separator";
+import { getPost, getBlogPosts } from "@/data/blog";
+
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
 export async function generateMetadata({
   params,
 }: {
-  params: {
-    slug: string;
-  };
-}): Promise<Metadata | undefined> {
-  let post = await getPost(params.slug);
-
-  let {
-    title,
-    publishedAt: publishedTime,
-    summary: description,
-    image,
-  } = post.metadata;
-  let ogImage = image ? `${DATA.url}${image}` : `${DATA.url}/og?title=${title}`;
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPost(slug);
 
   return {
-    title,
-    description,
+    title: post.metadata.title,
+    description: post.metadata.summary,
     openGraph: {
-      title,
-      description,
+      title: post.metadata.title,
+      description: post.metadata.summary,
       type: "article",
-      publishedTime,
-      url: `${DATA.url}/blog/${post.slug}`,
-      images: [
-        {
-          url: ogImage,
-        },
-      ],
+      publishedTime: post.metadata.publishedAt,
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
-      images: [ogImage],
+      title: post.metadata.title,
+      description: post.metadata.summary,
     },
   };
 }
 
-export default async function Blog({
+export default async function BlogPostPage({
   params,
 }: {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }) {
-  let post = await getPost(params.slug);
-
-  if (!post) {
-    notFound();
-  }
+  const { slug } = await params;
+  const post = await getPost(slug);
 
   return (
-    <section id="blog">
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
-            headline: post.metadata.title,
-            datePublished: post.metadata.publishedAt,
-            dateModified: post.metadata.publishedAt,
-            description: post.metadata.summary,
-            image: post.metadata.image
-              ? `${DATA.url}${post.metadata.image}`
-              : `${DATA.url}/og?title=${post.metadata.title}`,
-            url: `${DATA.url}/blog/${post.slug}`,
-            author: {
-              "@type": "Person",
-              name: DATA.name,
-            },
-          }),
-        }}
-      />
-      <h1 className="title font-medium text-2xl tracking-tighter max-w-[650px]">
+    <article className="pt-4">
+      {/* Back link */}
+      <div className="mb-8">
+        <Link
+          href="/blog"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Back to blog
+        </Link>
+      </div>
+
+      {/* Post header */}
+      <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
         {post.metadata.title}
       </h1>
-      <div className="flex justify-between items-center mt-2 mb-8 text-sm max-w-[650px]">
-        <Suspense fallback={<p className="h-5" />}>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-            {formatDate(post.metadata.publishedAt)}
-          </p>
-        </Suspense>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <span>
+          {new Date(post.metadata.publishedAt).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </span>
+
+        {post.metadata.tags && post.metadata.tags.length > 0 && (
+          <>
+            <span>·</span>
+            {post.metadata.tags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/blog/tag/${tag}`}
+                className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded hover:bg-border transition-colors"
+              >
+                #{tag}
+              </Link>
+            ))}
+          </>
+        )}
       </div>
-      <article
-        className="prose dark:prose-invert mt-6"
+
+      {/*
+       * `prose` enables @tailwindcss/typography styles (h1-h6, p, ul, a, etc).
+       * `prose-sm` uses the small size scale.
+       * `dark:prose-invert` flips prose colors in dark mode.
+       * `max-w-none` removes the default max-width so it fills our 2xl container.
+       */}
+      <div
+        className="mt-10 prose prose-sm dark:prose-invert max-w-none"
         dangerouslySetInnerHTML={{ __html: post.source }}
-      ></article>
-      {Array.isArray(post.metadata.tags) && post.metadata.tags.length > 0 && (
-        <>
-          <Separator className="my-8" />
-          <div className="mt-8">
-            <div className="flex items-center flex-wrap gap-2 mb-4">
-              <h2 className="text-sm font-semibold text-muted-foreground mr-2">
-                Tags:
-              </h2>
-              {post.metadata.tags.map((tag: string) => (
-                <Link key={tag} href={`/blog/tag/${encodeURIComponent(tag)}`}>
-                  <Badge variant="secondary">{tag}</Badge>
-                </Link>
-              ))}
-            </div>
-            <div className="flex gap-2 items-center mt-2">
-              <span className="text-sm font-semibold text-muted-foreground mr-2">
-                Share:
-              </span>
-              {/* X share */}
-              <Link
-                href={`https://x.com/intent/tweet?url=${encodeURIComponent(`${DATA.url}/blog/${post.slug}`)}&text=${encodeURIComponent(`Check out this post from @samgutentag: ${post.metadata.title}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="outline" size="icon" aria-label="Share on X">
-                  <Icons.Icons.x className="size-4" />
-                </Button>
-              </Link>
-              {/* Mastodon share */}
-              <Link
-                href={`https://mastodon.social/share?text=${encodeURIComponent(`Check out this post from @samgutentag: ${post.metadata.title} ${DATA.url}/blog/${post.slug}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Share on Mastodon"
-                >
-                  <Icons.Icons.mastodon className="size-4" />
-                </Button>
-              </Link>
-              {/* Bluesky share */}
-              <Link
-                href={`https://bsky.app/intent/compose?text=${encodeURIComponent(`Check out this post from @samgutentag.bsky.social: ${post.metadata.title} ${DATA.url}/blog/${post.slug}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Share on Bluesky"
-                >
-                  <Icons.Icons.bluesky className="size-4" />
-                </Button>
-              </Link>
-              {/* Email share */}
-              <Link
-                href={`mailto:?subject=${encodeURIComponent(post.metadata.title)}&body=${encodeURIComponent(`Check out this post from @samgutentag: ${post.metadata.title} - ${DATA.url}/blog/${post.slug}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Share by Email"
-                >
-                  <Icons.Icons.email className="size-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </>
-      )}
-    </section>
+      />
+    </article>
   );
 }

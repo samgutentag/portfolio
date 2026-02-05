@@ -1,8 +1,6 @@
 ---
-title: 146-what-does-your-subconscious-try-to-tell
-summary: ""
-publishedAt: ""
+title: What does your subconscious try to tell you
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What does your subconscious try to tell you
 

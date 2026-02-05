@@ -1,8 +1,6 @@
 ---
-title: 357-whats-something-you-hope-will-surprise
-summary: ""
-publishedAt: ""
+title: Whats something you hope will surprise you soon
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Whats something you hope will surprise you soon
 

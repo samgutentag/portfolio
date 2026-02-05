@@ -1,51 +1,80 @@
-import BlurFade from "@/components/magicui/blur-fade";
-import { getBlogPosts } from "@/data/blog";
-import Link from "next/link";
+/**
+ * Blog listing — groups posts by year for an editorial archive feel.
+ *
+ * Server Component: posts are fetched at build time, so this page
+ * is fully static with zero client-side JavaScript (aside from the nav).
+ */
 
-export const metadata = {
+import Link from "next/link";
+import type { Metadata } from "next";
+import { getBlogPosts } from "@/data/blog";
+
+export const metadata: Metadata = {
   title: "Blog",
-  description:
-    "Thoughts on software development, quick tutorials, longer form content, and more.",
+  description: "Writing about dev, tech, and building things.",
 };
 
-const BLUR_FADE_DELAY = 0.04;
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 export default async function BlogPage() {
   const posts = await getBlogPosts();
 
+  /**
+   * Group posts into { "2025": [...], "2024": [...], ... }.
+   * Posts are already sorted newest-first from getBlogPosts(),
+   * so each year bucket is also in reverse-chronological order.
+   */
+  const postsByYear = posts.reduce<Record<string, typeof posts>>((acc, post) => {
+    const year = new Date(post.metadata.publishedAt).getFullYear().toString();
+    if (!acc[year]) acc[year] = [];
+    acc[year].push(post);
+    return acc;
+  }, {});
+
+  const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
+
   return (
-    <section>
-      <BlurFade delay={BLUR_FADE_DELAY}>
-        <h1 className="font-medium text-2xl mb-8 tracking-tighter">blog</h1>
-      </BlurFade>
-      {posts
-        .sort((a, b) => {
-          if (
-            // change `>` to `<` to reverse sort order
-            new Date(a.metadata.publishedAt) > new Date(b.metadata.publishedAt)
-          ) {
-            return -1;
-          }
-          return 1;
-        })
-        .map((post, id) => (
-          <BlurFade delay={BLUR_FADE_DELAY * 2 + id * 0.05} key={post.slug}>
-            <Link
-              className="flex flex-col space-y-1 mb-4"
-              href={`/blog/${post.slug}`}
-            >
-              <div className="w-full flex flex-col">
-                <p className="tracking-tight">{post.metadata.title}</p>
-                <p className="h-6 text-s text-muted-foreground">
-                  {post.metadata.summary}
-                </p>
-                <p className="h-6 text-xs text-muted-foreground">
-                  {post.metadata.publishedAt}
-                </p>
-              </div>
-            </Link>
-          </BlurFade>
+    <div className="pt-4">
+      <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+        Blog
+      </h1>
+      <p className="mt-2 text-base text-muted-foreground">
+        Writing about dev, tech, and building things.
+      </p>
+
+      <div className="mt-12 space-y-10">
+        {years.map((year) => (
+          <div key={year}>
+            {/* Year label — same style as the section dividers on the homepage */}
+            <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4">
+              {year}
+            </h2>
+
+            <div className="space-y-0">
+              {postsByYear[year].map((post) => (
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className="group flex items-baseline justify-between gap-4 py-3 border-b border-border last:border-0"
+                >
+                  <span className="text-base text-foreground group-hover:text-accent transition-colors">
+                    {post.metadata.title}
+                  </span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {formatDate(post.metadata.publishedAt)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
         ))}
-    </section>
+      </div>
+    </div>
   );
 }

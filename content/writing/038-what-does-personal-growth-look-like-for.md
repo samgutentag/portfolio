@@ -1,8 +1,6 @@
 ---
-title: 038-what-does-personal-growth-look-like-for
-summary: ""
-publishedAt: ""
+title: What does personal growth look like for you
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: What does personal growth look like for you
 

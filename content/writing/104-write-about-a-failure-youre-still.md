@@ -1,8 +1,6 @@
 ---
-title: 104-write-about-a-failure-youre-still
-summary: ""
-publishedAt: ""
+title: Write about a failure youre still processing
+summary: ''
+publishedAt: ''
 ---
-
-> Prompt: Write about a failure youre still processing
 
