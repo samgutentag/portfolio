@@ -40,29 +40,36 @@ export default function WritingPage() {
         )}
       </p>
 
-      <p className="mt-2 text-base text-muted-foreground">
-        I'll be honest, I dont recall where I got this idea from originally, but
-        the goal here is to write for 20 minutes each day. I'm working on
-        finding my voice, rather than chucking every random bit and bob of
-        thought into an LLM and calling it a day, I want to commit to actaully
-        creating something that I can learn from and maybe even be proud of down
-        the line.
-      </p>
+      <details className="mt-4 rounded-md border border-border bg-muted/30 p-3">
+        <summary className="cursor-pointer text-base font-medium text-foreground">
+          what is this
+        </summary>
+        <div className="mt-2 space-y-2 text-base text-muted-foreground">
+          <p>
+            I'll be honest, I dont recall where I got this idea from originally,
+            but the goal here is to write for 20 minutes each day. I'm working
+            on finding my voice, rather than chucking every random bit and bob
+            of thought into an LLM and calling it a day, I want to commit to
+            actaully creating something that I can learn from and maybe even be
+            proud of down the line.
+          </p>
 
-      <p className="mt-2 text-base text-muted-foreground">
-        On the topic of LLMs, Its 2026, and I'm not going to pretend I dont find
-        them extremely useful. So to get started with this project, I asked
-        Claude to generate a year’s worth of prompts structured by weekly themes
-        (like identity, curiosity, failure, joy, etc.), and then tweaked them to
-        make sure they were varied, personal, and flexible enough for however
-        I’m feeling that day.
-      </p>
+          <p>
+            On the topic of LLMs, Its 2026, and I'm not going to pretend I dont
+            find them extremely useful. So to get started with this project, I
+            asked Claude to generate a year’s worth of prompts structured by
+            weekly themes (like identity, curiosity, failure, joy, etc.), and
+            then tweaked them to make sure they were varied, personal, and
+            flexible enough for however I’m feeling that day.
+          </p>
 
-      <p className="mt-2 text-base text-muted-foreground">
-        You'll also note the first post is on February 4th... so I guess this
-        year worth of prompts is actually 365 days of prompts. I hope you enjoy
-        reading as much as I hope to enjoy this project.
-      </p>
+          <p>
+            You'll also note the first post is on February 4th... so I guess
+            this year worth of prompts is actually 365 days of prompts. I hope
+            you enjoy reading as much as I hope to enjoy this project.
+          </p>
+        </div>
+      </details>
 
       {posts.length === 0 ? (
         <p className="mt-12 text-sm text-muted-foreground">
