@@ -18,9 +18,12 @@ import path from "path";
 import matter from "gray-matter";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeStringify from "rehype-stringify";
+import { visit } from "unist-util-visit";
+import type { Root, Element } from "hast";
 
 export type BlogPostMetadata = {
   title: string;
@@ -44,9 +47,34 @@ const CONTENT_DIR = path.join(process.cwd(), "content", "blog");
  * rehype-pretty-code handles <pre>/<code> blocks with shiki themes;
  * keepBackground: false lets us style the background via CSS instead of inline styles.
  */
+/** Wraps <table> in a scrollable div so wide tables don’t break layout on small screens. */
+function rehypeWrapTables() {
+  return (tree: Root) => {
+    visit(tree, "element", (node, index, parent) => {
+      if (node.tagName !== "table" || typeof index !== "number" || !parent) return;
+      const el = parent as Element;
+      const cls = el.properties?.className;
+      if (el.type === "element" && el.tagName === "div" && Array.isArray(cls) && cls.includes("overflow-x-auto")) return;
+      const wrapper: Element = {
+        type: "element",
+        tagName: "div",
+        properties: { className: ["overflow-x-auto", "my-4"] },
+        children: [node],
+      };
+      (parent as Element).children[index] = wrapper;
+    });
+  };
+}
+
+/**
+ * Converts a raw markdown string into an HTML string.
+ * rehype-pretty-code handles <pre>/<code> blocks with shiki themes;
+ * keepBackground: false lets us style the background via CSS instead of inline styles.
+ */
 export async function markdownToHTML(markdown: string): Promise<string> {
   const result = await unified()
     .use(remarkParse)
+    .use(remarkGfm)
     .use(remarkRehype)
     .use(rehypePrettyCode, {
       theme: {
@@ -55,6 +83,7 @@ export async function markdownToHTML(markdown: string): Promise<string> {
       },
       keepBackground: false,
     })
+    .use(rehypeWrapTables)
     .use(rehypeStringify)
     .process(markdown);
 

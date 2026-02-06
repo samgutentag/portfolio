@@ -104,3 +104,31 @@ pre code[data-line-numbers] > [data-line]::before {
   font-size: 1em;
   color: inherit;
 }
+
+/* ─── prose table styles ─── */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.prose thead {
+  border-bottom: 2px solid var(--border);
+}
+.prose th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--foreground);
+  padding: 0.5rem 0.75rem;
+  background: var(--muted);
+}
+.prose td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+}
+.prose tbody tr:last-child td {
+  border-bottom: none;
+}
+.prose tbody tr:hover td {
+  background: var(--muted);
+}
