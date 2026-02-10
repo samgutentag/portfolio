@@ -96,6 +96,92 @@ pre code[data-line-numbers] > [data-line]::before {
   padding: 0 1.5rem;
 }
 
+/* ─── Carbon-style terminal window for shell code blocks ─── */
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="bash"]),
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="sh"]),
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="zsh"]),
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="shell"]),
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="prompt"]) {
+  position: relative;
+  padding-top: 2.5rem;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin: 1rem 0;
+}
+
+/* Traffic light dots */
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="bash"])::before,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="sh"])::before,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="zsh"])::before,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="shell"])::before,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="prompt"])::before {
+  content: "";
+  position: absolute;
+  top: calc((2.25rem - 12px) / 2);
+  left: 1rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: 20px 0 #febc2e, 40px 0 #28c840;
+}
+
+/* Title bar separator */
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="bash"])::after,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="sh"])::after,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="zsh"])::after,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="shell"])::after,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="prompt"])::after {
+  content: "";
+  position: absolute;
+  top: 2.25rem;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Title text — centered in the title bar */
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="bash"]) [data-rehype-pretty-code-title],
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="sh"]) [data-rehype-pretty-code-title],
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="zsh"]) [data-rehype-pretty-code-title],
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="shell"]) [data-rehype-pretty-code-title],
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="prompt"]) [data-rehype-pretty-code-title] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  color: var(--muted-foreground);
+}
+
+/* Remove pre's own chrome — the figure handles it */
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="bash"]) pre,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="sh"]) pre,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="zsh"]) pre,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="shell"]) pre,
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="prompt"]) pre {
+  border: none;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+}
+
+/* Prompt variant — line wrapping enabled */
+figure[data-rehype-pretty-code-figure]:has(pre[data-language="prompt"]) pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* ─── prose overrides for inline code ─── */
 .prose code {
   background: var(--muted);

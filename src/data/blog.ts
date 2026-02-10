@@ -22,6 +22,7 @@ import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeStringify from "rehype-stringify";
+import { createHighlighter } from "shiki";
 import { visit } from "unist-util-visit";
 import type { Root, Element } from "hast";
 
@@ -82,6 +83,11 @@ export async function markdownToHTML(markdown: string): Promise<string> {
         dark: "min-dark",
       },
       keepBackground: false,
+      getHighlighter: (options) =>
+        createHighlighter({
+          ...options,
+          langAlias: { prompt: "shellscript" },
+        }),
     })
     .use(rehypeWrapTables)
     .use(rehypeStringify)
