@@ -9,7 +9,8 @@ Personal portfolio and blog built with Next.js 16, React 19, and Tailwind CSS 4.
 Full markdown + JSX authoring via MDX with a unified processing pipeline.
 
 - **Syntax highlighting** — Dual-theme Shiki (`min-light` / `min-dark`) via rehype-pretty-code, switches automatically with the site theme
-- **Carbon-style terminal windows** — Shell code blocks (`bash`, `sh`, `zsh`, `shell`) render inside a macOS-style window frame with traffic light dots and a title bar separator, all CSS-only
+- **Carbon-style terminal windows** — Shell code blocks (`bash`, `sh`, `zsh`, `shell`) render inside a macOS-style window frame with traffic light dots and a title bar separator, all CSS-only. Use `title="..."` on the code fence to display text in the title bar
+- **Prompt formatter** — Use `prompt` as the language for a terminal window variant with line wrapping enabled, ideal for long commands or terminal output
 - **GitHub Flavored Markdown** — Tables, strikethrough, task lists via remark-gfm
 - **Responsive tables** — Custom rehype plugin wraps tables in a horizontal scroll container on small screens
 - **Line numbers** — Opt-in via `showLineNumbers` meta string on fenced code blocks
