@@ -1,0 +1,122 @@
+---
+title: "🍔 Let Claude Cook"
+summary: "I Finally Built Something Faster Than I Could Buy the Domain"
+publishedAt: "2026-02-10"
+image: "/blog/2026-02-10/screen.png"
+tags: ["AI", "developer", "tech", "burgers", "claude code"]
+---
+
+## I Built Something Faster Than I Could Buy the Domain
+
+Santa Barbara Burger Week is back. Every year, dozens of restaurants across the city (and surrounding area, woo!) serve up $10 specialty burgers for a week long event, and the the primary source of truth is a single article in [The Independent](https://www.independent.com/2026/02/05/burger-week-2026/).
+
+I wanted a map and thought "I could build that!" In the past, this is where I'd buy a domain name, feel productive about it, make note to work on it in the evening, _and never write a line of code_. I have a graveyard of unused domains to prove it. But this time, I had a working app before the DNS finished propagating.
+
+![the finished map, zoomed to show markers across SB](/blog/2026-02-10/screen.png)
+
+> Check it out live at [https://sbburgerweekmap.com](https://sbburgerweekmap.com)
+
+## I Typically Don't Bother Actually Building These
+
+Let me be honest: I would not have attempted this project last year, or heck even a few months ago. Not because it's technically hard, a map with some markers isn't rocket science. But the surface area of little tasks would have killed my motivation before I started:
+
+- Scraping restaurant addresses from an article
+- Geocoding every one of them into lat/lng coordinates
+- extracting Google Maps and Apple Maps links
+- Hand-wiring popup HTML for each location
+- Getting the mobile layout right
+- Setting up deployment
+
+Any one of those is a 20-minute yak shave. Stack them all up and the project dies in the "maybe someday" pile, right next to the domain name I already bought for it.
+
+## Describe the What, Not the How
+
+I described the _outcome_ I wanted in plain English, and Claude Code figured out the implementation. I did not give pseudo-code, I didnt draw up architecture diagrams, I simply wrote out my intent.
+
+My first prompt was basically: "Here's an article with a list of burger week restaurants. Build me an interactive map."
+
+That's it. That was the "spec" doc.
+
+```sh
+id like to build a basic map application for Santa Barbara Burger Week. Ideally it would be a map with the locations and links to each location.
+
+here is the source data i want to use to generate the webapp https://www.independent.com/2026/02/05/burger-week-2026/
+```
+
+I hit enter and went to go figure out a domain I liked. By the time I'd clicked purchase, I came back to a fully working map in my browser. Claude Code had:
+
+- Fetched the article and extracted restaurants
+- Geocoded every address using Nominatim
+- Generated a `data.js` file with structured entries for each location
+- Built a Leaflet map with color-coded markers by area
+- Added a sidebar with search and filtering
+- Made it mobile-responsive with a slide-up drawer
+
+![the sidebar with area filters and restaurant list](/blog/2026-02-10/sidebar-detail.png)
+
+Just four files: `index.html`, `app.js`, `style.css`, and `data.js`. Open the HTML file and I've got a map. The domain purchase genuinely took longer than the first working version.
+
+## Iterating with Sentences
+
+Once the base was working, I kept iterating with Claude running on a background terminal tab. This is where the workflow really clicked. I'd type a sentence, hit enter, and go do something else while Claude Code built it. Each feature was a quick prompt and then back to whatever I was doing:
+
+> "Make the map icon turn into a little 🍔 emoji when it's selected"
+
+> "When I hover over a restaurant in the list, show me where it is on the map"
+
+> "Have the area filter zoom the map to fit just those locations"
+
+> "Show a popup with burger details when I hover over a marker"
+
+I wasn't writing code. I wasn't even watching it work most of the time. I was describing behavior, hitting enter, and coming back to a finished feature. Refresh the browser, check the result, type the next sentence. The implementation just appeared in the background, consistent with everything already built.
+
+A few of my favorites:
+
+- **Cluster tooltips**: Zoomed-out markers group into clusters showing a count. I asked for hover tooltips on clusters, and now they show a list of restaurant names. One sentence, done.
+- **Source monitoring**: I asked for a GitHub Action that checks the Independent article daily for changes and opens an issue with a diff. It uses Python's stdlib HTML parser to extract just the article content (no pip dependencies), compares SHA-256 hashes, and commits the new baseline. I didn't spec any of that, I said "tell me when the article changes."
+- **Hand-picked map links**: I wanted Apple Maps and Google Maps links that go directly to each business, not just an address search. Claude Code set up the data structure and fallbacks while I manually curated the links. We were literally working in parallel, I'd be on Apple Maps searching for a restaurant while Claude Code was building the next feature I'd asked for. By the time I'd pasted in a batch of links, there was a new feature waiting for me to review.
+
+![a popup showing burger name, description, address, maps links](/blog/2026-02-10/restaurant-detail.png)
+
+## The Lack of Stack
+
+The whole thing is:
+
+- **Leaflet** + **MarkerCluster** (from CDN)
+- **CARTO** basemap tiles
+- Plain HTML, CSS, and JavaScript
+- GitHub Pages for hosting
+- A GitHub Action for monitoring the source article
+
+It's really that simple, there is not React, no Tailwind, no buildpipeline, just a single html file. This keeps something so simple, so very much, well, simple. I can iterate with Claude quickly and jump in to make manual edits on the fly.
+
+> You can fork the repo, edit `data.js` with your restaurants, push to GitHub, and you're live.
+
+That simplicity wasn't a constraint I ever explicitly set. Claude Code just reached for the simplest thing that works. When I wanted a burger emoji overlay on map markers, it didn't suggest swapping to a different mapping library. It created a `divIcon` overlay on top of the existing `circleMarker`.
+
+## So What Did I Do, Exactly?
+
+It's worth being clear about what my contribution was, because this isn't a "the AI did everything" story:
+
+- **I had the idea.** The article exists, the map doesn't. That's a human observation.
+- **I directed every feature.** Each prompt was a product decision: what matters, what doesn't, what the user should see.
+- **I curated the data.** I hand-picked Google Maps and Apple Maps links for 48 locations. I checked addresses. I verified coordinates. This was my main "job" and I did it while Claude Code built features in the background.
+- **I made taste decisions.** Color palette, layout hierarchy, what goes in the popup, what goes in the sidebar.
+- **I said "not quite" a lot.** The first pass was rarely the last. I'd see the result, adjust the direction, and iterate.
+- **I listened to a podcast.** Seriously. I spent a good chunk of this project copying Apple Maps links while half-listening to a podcast and occasionally tabbing back to see what Claude Code had shipped while I wasn't looking. That's the vibe.
+
+## Rethinking My Capacity
+
+The thing that surprised me most wasn't the speed. It was that I _started at all_.
+
+This is a project I would have bookmarked, thought "that'd be cool," purchased the domain, and then never opened a code editor for. I know this because I've done it dozens of times. The activation energy was too high for what felt like a throwaway event.
+
+My first prompt was barely a sentence. Thirty minutes later I had a live site. An hour later it had hover interactions, mobile support, source monitoring, and a README for anyone who wants to fork it for their own city's food event. Most of that hour, I was doing something else while Claude Code worked.
+
+The barrier isn't knowing how to code anymore. It's knowing whether the thing is worth the effort to start. And when starting costs almost nothing, subscription aside, I can quickly prototype things I'd never build before.
+
+---
+
+The map is live at [https://sbburgerweekmap.com](https://sbburgerweekmap.com). The code is on [GitHub](https://github.com/samgutentag/sbburgerweek) — fork it and map your own burger week!
+
+_Santa Barbara Burger Week 2026 runs February 19–25. All burgers are $10. No affiliation, just hungry._
