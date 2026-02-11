@@ -78,6 +78,32 @@ A few of my favorites:
 
 ![a popup showing burger name, description, address, maps links](/blog/2026-02-10/restaurant-detail.png)
 
+## Pick Favorites (Because That's What You Do With the Print Copy)
+
+I posted the project [to reddit](https://www.reddit.com/r/SantaBarbara/comments/1r0ubof) and got a comment telling me the first thing they do with the print article is cross off the restaurants they're not interested in. I found a new feature!
+
+![reddit feature request](/blog/2026-02-10/reddit-request.png)
+
+> "Add a checklist mode where I can toggle restaurants on and off"
+
+So back to the terminal, Claude Code added a "Pick Favorites" button that toggles checkboxes on the restaurant list. Unchecked restaurants dim to 40% opacity (both in the sidebar and on the map) so you can still see them but they fade into the background. Bulk "All" and "None" buttons for quick resets. Everything persists to localStorage, so your picks survive a page refresh.
+
+The killer addition is **Print Selected**. Hit the button and it opens a new page with a numbered map and a grouped list of just your favorites - area by area, with addresses, phone numbers, and burger descriptions in a two-column layout. The map captures as a static image before printing so it actually renders in the PDF (Leaflet's CSS transforms don't survive print mode - a fun one to debug).
+
+The whole feature took maybe three rounds of prompting. The print-to-PDF blank page bug took another two. Upholding the classic ratio: 20% building, 80% getting the edge cases right.
+
+![sample pdf](/blog/2026-02-10/picker.png)
+
+## The Embed Got Picked Up
+
+A local news site asked if they could embed the map in their burger week coverage. I didn't have an embed page, so:
+
+> "Build an embeddable version of the map for iframes"
+
+Claude Code created a self-contained embed at `/embed/map` as its own HTML, JS, and CSS, but sharing `data.js` with the main site so restaurant updates propagate automatically. No header, no attribution footer, just the map with a compact sidebar. A showcase page at `/embed` has the iframe preview and copyable embed code.
+
+Once the Pick Favorites feature landed on the main site, porting it to the embed was another one-liner. The embed shares the same localStorage key, so favorites picked on the main site carry over to the embedded version.
+
 ## The Lack of Stack
 
 The whole thing is:
@@ -117,6 +143,6 @@ The barrier isn't knowing how to code anymore. It's knowing whether the thing is
 
 ---
 
-The map is live at [https://sbburgerweekmap.com](https://sbburgerweekmap.com). The code is on [GitHub](https://github.com/samgutentag/sbburgerweek) — fork it and map your own burger week!
+The map is live at [https://sbburgerweekmap.com](https://sbburgerweekmap.com). The code is on [GitHub](https://github.com/samgutentag/sbburgerweek) - fork it and map your own burger week!
 
 _Santa Barbara Burger Week 2026 runs February 19–25. All burgers are $10. No affiliation, just hungry._
