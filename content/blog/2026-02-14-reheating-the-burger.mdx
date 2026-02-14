@@ -1,0 +1,117 @@
+---
+title: "🍽️ Make it Forkable"
+summary: "Making a One-Off Project Actually Forkable"
+publishedAt: "2026-02-14"
+image: "/blog/2026-02-10/screen.png"
+tags: ["AI", "developer", "tech", "burgers", "claude code"]
+---
+
+## The "Just Fork It" Problem
+
+In my [last post](/blog/2026-02-10-let-claude-cook-burgers), I built an interactive map for Santa Barbara Burger Week using Claude Code and casually wrote:
+
+> You can fork the repo, edit `data.js` with your restaurants, push to GitHub, and you're live.
+
+That was aspirational. In reality, someone forking the repo for their own food event would also need to manually update:
+
+- The Open Graph image (SVG and PNG)
+- The CNAME file for their custom domain
+- HTML `<title>` tags across three pages
+- Favicon emoji in three HTML files
+- Venmo link text and URL
+- The README title, hits badge, and embed snippet
+- A hardcoded Cloudflare analytics token
+
+That's **SEVEN FILES** of find-and-replace. Nobody's doing that. The "just fork it" promise was more of a "just fork it and then spend howver long hunting down every place I hardcoded something."
+
+## One Config File to Rule Them All
+
+```prompt title="Claude Code Prompt"
+Create a config file so someone can rebrand this for a different food event by editing one file
+```
+
+Claude Code created `config.js` to have a single object with everything event-specific:
+
+```js
+const THEME = {
+  eventName: "SB Burger Week 2026",
+  eventDates: "Feb 19–25",
+  emoji: "🍔",
+  itemLabel: "burger",
+  siteUrl: "https://sbburgerweekmap.com",
+  venmoUser: "samgutentag",
+  cfAnalyticsToken: "abc123...",
+  // ... and more
+};
+```
+
+The main app, embed, and print page all read from this at runtime. JavaScript handles the dynamic stuff: meta tags, page titles, header text, Venmo links. Change the config, refresh, and the app rebrands itself.
+
+But some things _can't_ read JavaScript at runtime. The OG image is a static PNG that social media crawlers fetch. The CNAME is a plain text file. README badges are just markdown. These need to be rewritten on disk.
+
+## The Apply Script
+
+```prompt title="Claude Code Prompt"
+Now build a script that reads config.js and updates everything else
+```
+
+Claude Code built `apply-theme.py`, a Python script that parses `config.js` with regex, then:
+
+1. **Updates `og-image.svg`**: finds `<text>` elements by their y-coordinate and swaps the content
+2. **Regenerates `og-image.png`**: renders the SVG with ImageMagick, then composites a Twemoji PNG on top (because ImageMagick can't render emoji from SVG, it just draws a blank box, which is a fun thing to discover at 11pm)
+3. **Rewrites `CNAME`**: extracts the domain from the site URL
+4. **Updates HTML fallbacks**: favicon emoji, `<title>` tags, header text, Venmo links across all three HTML files
+5. **Patches `README.md`**: title, hits badge URL, embed snippet
+
+All stdlib Python, no pip install. The only external dependency is ImageMagick for the PNG, and if it's not installed the script just skips that step and warns you.
+
+The fork workflow is now actually what I promised:
+
+```bash
+# 1. Edit config.js with your event details
+# 2. Run the theme script
+python3 apply-theme.py
+# 3. Push to GitHub Pages
+```
+
+## Generalizing Beyond Burgers
+
+While building the config system i realized the data file had a `burger` field on every restaurant entry. That's a pretty burger-specific name for what's really just "the featured menu item."
+
+```prompt title="Claude Code Prompt"
+update the data.js, mock_data.js and references to the "burger" attribute to be "menuItem"
+```
+
+A straightforward rename across five files: `data.js`, `mock_data.js`, `app.js`, `embed.js`, and the README's fork guide. The CSS classes (`popup-burger`, `burger-icon`) stayed as-is since they're just style hooks that don't leak into the fork experience (and a throwback to the original project, why not). The config already had `itemLabel: "burger"` for display text, so the UI still says "burger" everywhere it should.
+
+Taco week, ramen week, pizza week, if it's popsicle, it's possble!
+
+## Cleaning Up the Analytics Token
+
+The Cloudflare Web Analytics token was hardcoded in `index.html`. It's not a secret, it's client-side JavaScript visible to anyone who views source. But for forkers, it's one more thing to hunt down and remove or update.
+
+Moved it to `config.js` as `cfAnalyticsToken`. The apply script now injects or removes the `<script>` snippet based on whether the token is set:
+
+```js
+// Set your own token, or null to remove analytics entirely
+cfAnalyticsToken: "your-token-here",
+```
+
+Set it to `null`, run the script, and the snippet disappears from the HTML. No digging through markup to find and delete someone else's tracking code.
+
+## The Actual Fork Test
+
+To verify everything works end-to-end, I swapped the config to a hypothetical taco week:
+
+```js
+eventName: "SB Taco Week 2026",
+emoji: "🌮",
+siteUrl: "https://sbtacoweekmap.com",
+itemLabel: "taco",
+```
+
+Ran the script. Every file updated correctly: CNAME said `sbtacoweekmap.com`, the OG image said "Taco Week," HTML titles and favicons all showed tacos, the README badge pointed to the new domain. Swapped back to burgers, ran again, clean round-trip.
+
+---
+
+The map is live at [sbburgerweekmap.com](https://sbburgerweekmap.com) and the code is on [GitHub](https://github.com/samgutentag/sbburgerweek). Fork it, edit `config.js`, run `python3 apply-theme.py`, and map your own food week.
