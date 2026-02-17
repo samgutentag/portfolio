@@ -24,7 +24,7 @@ export const DATA = {
     {
       company: "Trunk",
       href: "https://trunk.io",
-      logoUrl: "/companyIcons/trunk.png",
+      logoUrl: "/companyIcons/trunk.svg",
       title: "Sr. Developer Relations Engineer",
       location: "Remote",
       start: "Jan 2025",
@@ -33,7 +33,7 @@ export const DATA = {
     {
       company: "Audius",
       href: "https://audius.co",
-      logoUrl: "/companyIcons/audius.png",
+      logoUrl: "/companyIcons/audius.svg",
       title: "Developer Relations Engineer",
       location: "Remote",
       start: "Dec 2023",
@@ -42,7 +42,7 @@ export const DATA = {
     {
       company: "Helium Foundation",
       href: "https://helium.foundation",
-      logoUrl: "/companyIcons/helium-foundation.jpeg",
+      logoUrl: "/companyIcons/helium-foundation.svg",
       title: "Developer Relations Lead",
       location: "Remote",
       start: "May 2022",
@@ -51,7 +51,7 @@ export const DATA = {
     {
       company: "Penumbra, Inc",
       href: "https://www.penumbrainc.com",
-      logoUrl: "/companyIcons/penumbra.png",
+      logoUrl: "/companyIcons/penumbra.svg",
       title: "Developer Support Engineer",
       location: "Alameda, CA",
       start: "Sep 2018",
@@ -60,7 +60,7 @@ export const DATA = {
     {
       company: "Industrial Light & Magic",
       href: "https://www.ilm.com",
-      logoUrl: "/companyIcons/ilm.png",
+      logoUrl: "/companyIcons/ilm.svg",
       title: "Creature Technical Director",
       location: "San Francisco, CA",
       start: "Nov 2014",
@@ -69,7 +69,7 @@ export const DATA = {
     {
       company: "Industrial Light & Magic",
       href: "https://www.ilm.com",
-      logoUrl: "/companyIcons/ilm.png",
+      logoUrl: "/companyIcons/ilm.svg",
       title: "Technical Resource Assistant",
       location: "San Francisco, CA",
       start: "Sep 2013",
