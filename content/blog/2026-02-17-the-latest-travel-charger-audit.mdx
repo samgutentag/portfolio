@@ -1,0 +1,87 @@
+---
+title: "🔋 The Latest Travel Charger Audit"
+summary: "7 Devices, 6 Items, Zero Spreadsheets"
+publishedAt: "2026-02-17"
+tags: ["AI", "travel", "tech", "claude"]
+---
+
+## The Trip Packing Tax
+
+Every work trip starts the same way. I stare at a pile of chargers on my desk and try to figure out which combination of wall blocks, cables, and battery banks will keep seven devices alive for the week. iPhone, Apple Watch, MacBook, iPad, AirPods Max, AirPods Pro, and a battery bank that itself needs charging.
+
+It's not hard, exactly. It's just _annoying_. Every device has its own charging input. Some share USB-C, one still uses Lightning (looking at you, AirPods Max), and the Apple Watch needs its magnetic puck. Then there's the optimization puzzle: which wall block powers what, what can charge through the battery bank's passthrough, what needs to swap in the morning after something else finishes overnight.
+
+I've done this mental exercise dozens of times. I never write it down, so I re-derive it from scratch every trip. It takes 15 minutes of staring at cables, second-guessing myself, and inevitably throwing in one extra charger "just in case."
+
+## This Time I Described the Problem Instead
+
+I opened Claude and typed out my devices, their charging inputs, and the wall blocks I own. No spreadsheet, no diagram, just a plain description of the constraints:
+
+```prompt title="Claude Desktop Prompt"
+Here are my devices and what charges them. Here are the wall blocks I have. The Anker battery bank has built-in USB-C output cables and supports passthrough charging. Minimize what I pack.
+```
+
+That's it. Within a couple minutes Claude had mapped out the full charging topology: which block powers what, what chains through the battery bank, what swaps in the morning after the big draws finish overnight.
+
+The answer was **2 wall blocks + 1 battery bank + 3 cables**. Six items to charge seven devices. The 65W block stays home because the 67W does everything it does and then some.
+
+## The Charging Tree
+
+The key insight (which I'd vaguely known but never committed to) is treating the battery bank as a charging _hub_, not just a portable backup. With passthrough enabled:
+
+```
+67W Wall Block
+  → USB-C cable → Anker Battery Bank (charging itself)
+                    ├── Built-in Output 1 → MacBook
+                    └── Built-in Output 2 → iPad
+```
+
+One wall outlet, three devices charging simultaneously. The second outlet runs the 45W block dedicated to the Apple Watch via its magnetic cable.
+
+In the morning, the iPad is done. Swap it for the iPhone. The Apple Watch is done — swap the 45W block's cable for a USB-C to Lightning and top off the AirPods Max. By checkout, everything is at 100%.
+
+When you leave the hotel, the wall blocks stay plugged in. You carry just the battery bank and cables. The bank's built-in output cables handle your phone and iPad on the go, and if the airplane seat has an outlet, the 67W block plugs straight into the MacBook.
+
+## From Text to Interactive Diagram
+
+I liked the setup enough that I wanted a visual reference — something I could glance at in a hotel room instead of re-reading a text wall. So I asked Claude to build an interactive diagram that walks through each phase: overnight, morning swap, travel, and a packing checklist.
+
+It built a tabbed React component with the full charging topology diagrammed for each scenario. I dropped it onto my site as a standalone tool.
+
+**Check it out: [Charging Setup Diagram](/dev/charging-setup)**
+
+Now when I'm packing, I pull up the diagram, follow the overnight tab to plug everything in, and check the pack list tab before I zip the bag. No re-deriving, no second-guessing.
+
+## The Actual Packing List
+
+For reference, here's what goes in the bag:
+
+**Power Sources (3)**
+
+| Item | Purpose |
+|------|---------|
+| [67W USB-C Wall Block](https://www.amazon.com/dp/B0C33KSJNF) | Primary — powers bank passthrough, direct MacBook on flights |
+| [45W USB-C Wall Block](https://www.amazon.com/dp/B0BQLHGLG4) | Dedicated Apple Watch overnight |
+| [Anker Battery Bank](https://www.amazon.com/dp/B0DCBB2YTR) | Hub overnight + travel power (built-in USB-C output cables) |
+
+**Cables (3)**
+
+| Item | Purpose |
+|------|---------|
+| [USB-C to USB-C Cable](https://www.amazon.com/dp/B0DK5G316X) | Block → bank input / block → MacBook on flights |
+| [USB-C to Lightning Cable](https://www.amazon.com/dp/B08GFLBXSZ) | AirPods Max |
+| [Apple Watch Magnetic Cable](https://www.amazon.com/dp/B0CHX5CS34) | Apple Watch (USB-C end) |
+
+Six items. Seven devices. Every trip, no thinking required.
+
+## Why This Matters (To Me, Anyway)
+
+This isn't a hard problem. It's a _tedious_ problem. The kind of thing that's not worth building a spreadsheet for, but annoying enough that you waste 15 minutes on it every time. The mental overhead isn't the difficulty — it's that I have to re-derive the same answer from scratch because I never bother to formalize it.
+
+Describing the problem to Claude took about two minutes. Getting the optimized setup plus an interactive reference tool took maybe ten. That's a permanent solve for a recurring annoyance, and the activation energy was basically zero.
+
+The best part is that when my device lineup changes (goodbye Lightning AirPods Max, eventually) I can re-describe the constraints and get an updated setup in minutes. The diagram is easy to regenerate too. It's not a one-time artifact — it's a template for the next version of the problem.
+
+---
+
+_The interactive charging diagram is at [gutentag.world/dev/charging-setup](https://gutentag.world/dev/charging-setup). Built with Claude in about ten minutes of conversation._
