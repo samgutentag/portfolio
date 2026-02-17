@@ -159,7 +159,13 @@ export default async function Home() {
                     src={job.logoUrl}
                     alt={job.company}
                     fill
-                    className="object-contain"
+                    className="object-contain dark:hidden"
+                  />
+                  <Image
+                    src={job.logoDarkUrl}
+                    alt={job.company}
+                    fill
+                    className="object-contain hidden dark:block"
                   />
                 </div>
 

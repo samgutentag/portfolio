@@ -54,7 +54,8 @@ export const DATA = {
     {
       company: "Penumbra, Inc",
       href: "https://www.penumbrainc.com",
-      logoUrl: "/companyIcons/penumbra-white.svg",
+      logoUrl: "/companyIcons/penumbra.svg",
+      logoDarkUrl: "/companyIcons/penumbra-white.svg",
       title: "Developer Support Engineer",
       location: "Alameda, CA",
       start: "Sep 2018",
@@ -63,7 +64,8 @@ export const DATA = {
     {
       company: "Industrial Light & Magic",
       href: "https://www.ilm.com",
-      logoUrl: "/companyIcons/ilm-white.svg",
+      logoUrl: "/companyIcons/ilm.svg",
+      logoDarkUrl: "/companyIcons/ilm-white.svg",
       title: "Creature Technical Director",
       location: "San Francisco, CA",
       start: "Nov 2014",
@@ -72,7 +74,8 @@ export const DATA = {
     {
       company: "Industrial Light & Magic",
       href: "https://www.ilm.com",
-      logoUrl: "/companyIcons/ilm-white.svg",
+      logoUrl: "/companyIcons/ilm.svg",
+      logoDarkUrl: "/companyIcons/ilm-white.svg",
       title: "Technical Resource Assistant",
       location: "San Francisco, CA",
       start: "Sep 2013",
