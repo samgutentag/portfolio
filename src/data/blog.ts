@@ -33,7 +33,7 @@ export type BlogPostMetadata = {
   summary: string;
   tags?: string[];
   image?: string;
-  unpublished?: boolean;
+  draft?: boolean;
 };
 
 export type BlogPost = {
@@ -132,7 +132,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   );
 
   return posts
-    .filter((post) => !post.metadata.unpublished)
+    .filter((post) => !post.metadata.draft)
     .sort(
       (a, b) =>
         new Date(b.metadata.publishedAt).getTime() -
