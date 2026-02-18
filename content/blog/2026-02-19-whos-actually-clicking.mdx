@@ -1,0 +1,135 @@
+---
+title: "🧐 Who's Actually Clicking?"
+summary: "Adding Lightweight Analytics Without Slowing Anything Down"
+publishedAt: "2026-02-19"
+image: "/blog/2026-02-10/screen.png"
+tags: ["AI", "developer", "tech", "burgers", "claude code"]
+draft: true
+---
+
+## The Question I Couldn't Answer
+
+The site had Cloudflare Web Analytics for page views, but that tells me _how many people visited_, not _what they did_. I couldn't answer basic questions like:
+
+- Which restaurant gets the most clicks?
+- Do people use Apple Maps or Google Maps more?
+- Does anyone actually tap the phone number?
+- Is the share button getting used?
+
+I wanted answers without adding a heavy analytics SDK or slowing down the user experience.
+
+## The Constraint: Zero UX Impact
+
+This is a map app. People tap a restaurant, glance at the popup, and tap directions. The entire interaction is maybe three seconds. Any tracking that adds latency to that flow is a non-starter. No waiting for analytics to load. No blocking the UI while a request completes.
+
+`navigator.sendBeacon()` is perfect for this. It's a browser API designed for exactly this use case: fire off a small payload and don't wait for a response. The browser sends it in the background, even if the user is already navigating away. Zero impact on the interaction.
+
+## A Cloudflare Worker in 30 Lines
+
+The tracking endpoint is a Cloudflare Worker that receives a POST with `{action, label}` and writes it to Analytics Engine, Cloudflare's free time-series database:
+
+```js
+export default {
+  async fetch(request, env) {
+    const origin = request.headers.get("Origin") || "*";
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "POST",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Credentials": "true",
+    };
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
+
+    const { action, label } = await request.json();
+    env.TRACKER.writeDataPoint({
+      blobs: [action, label],
+      indexes: [action],
+    });
+
+    return new Response("ok", { headers: corsHeaders });
+  },
+};
+```
+
+That's the entire worker. It receives an action (what happened) and a label (which restaurant), writes it to the dataset, and returns. The Analytics Engine free tier gives 100k writes per day and 90 days of retention. For a week-long local event, that's more than enough.
+
+## The Client Side
+
+The tracker is a tiny script that reads a URL from the config:
+
+```js
+(function () {
+  var url = typeof THEME !== "undefined" && THEME.trackUrl;
+  if (!url) return;
+
+  window.track = function (action, label) {
+    if (navigator.sendBeacon) {
+      var blob = new Blob([JSON.stringify({ action: action, label: label })], {
+        type: "application/json",
+      });
+      navigator.sendBeacon(url, blob);
+    }
+  };
+})();
+```
+
+If `trackUrl` is `null` in the config, the script does nothing. `window.track` never gets defined, and all the `typeof window.track === "function"` checks throughout the app silently skip. No beacons, no network requests, no errors. Set the URL and tracking turns on. Remove it and it's gone. Same pattern as the Cloudflare analytics token from the [config post](/blog/2026-02-14-reheating-the-burger).
+
+Six events get tracked:
+
+| Action              | When                |
+| ------------------- | ------------------- |
+| `view`              | Popup opens         |
+| `directions-apple`  | Apple Maps tapped   |
+| `directions-google` | Google Maps tapped  |
+| `website`           | Website link tapped |
+| `phone`             | Phone number tapped |
+| `share`             | Share button tapped |
+
+Every event includes the restaurant name. That's it. No user IDs, no session tracking, no cookies. Just "someone looked at Mesa Burger" and "someone tapped Google Maps for Mesa Burger."
+
+## The CORS Rabbit Hole
+
+Testing locally surfaced a fun one. `sendBeacon` with a JSON string silently failed cross-origin. No error in the console, no failed request in the network tab, just nothing. The beacon vanished into the void.
+
+The fix was two things. First, `sendBeacon` sends with credentials mode `include` when you pass a Blob, which means the CORS response can't use `Access-Control-Allow-Origin: *`. The worker has to echo back the actual request origin. Second, the payload needs to be a `Blob` with an explicit `application/json` content type, not a plain string. A plain `JSON.stringify()` string sends as `text/plain` and the worker's `request.json()` doesn't parse it.
+
+Neither of these errors are visible. The beacon fires, returns `true`, and the request just doesn't arrive. It took `curl` (which worked fine) and `fetch` (which showed the CORS error) to triangulate what `sendBeacon` was silently swallowing.
+
+## Querying the Data
+
+Analytics Engine exposes a SQL API. After the event, I can pull everything with:
+
+```bash
+curl -s "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/analytics_engine/sql" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -d "SELECT blob2 AS restaurant, blob1 AS action, count() AS clicks
+      FROM sbburgerweek
+      GROUP BY restaurant, action
+      ORDER BY clicks DESC"
+```
+
+Which restaurant got the most views? Which one sent the most people to Apple Maps? Is there a restaurant everyone looks at but nobody gets directions to? Those questions have answers now.
+
+## Venmo Got Smarter Too
+
+While I was wiring up tracking, I also fixed the Venmo tip links. The original link was a generic `venmo.com` URL that opened a web page. On mobile, that's clunky. You're already on your phone, just open the app.
+
+Now the About modal detects mobile vs desktop. On mobile, it generates a `venmo://` deep link that opens the Venmo app directly with the recipient, amount, and note pre-filled. On desktop, it links to Venmo's web payment page. The print page also got a QR code that encodes the deep link, so someone looking at a printed PDF can scan it with their phone.
+
+## The FAB
+
+One more small thing. The "Select & Print" controls used to live in the sidebar. They worked fine on desktop but were awkward on mobile, taking up space in the restaurant list. Claude Code moved them into a floating action button (FAB) on the map itself, the printer icon in the top right. Tap it to enter selection mode, tap again to exit. The toolbar with "All," "None," and "Print" buttons appears next to it.
+
+It's a better interaction model: the selection controls are on the map where you're looking, not buried in the sidebar you've scrolled past. And when you're not selecting, they're just a single small button.
+
+---
+
+Burger Week starts in two days. The app handles incomplete data gracefully, deep links let people share specific restaurants, and now I'll actually know which burgers people are most excited about.
+
+The map is live at [sbburgerweekmap.com](https://sbburgerweekmap.com). Code on [GitHub](https://github.com/samgutentag/sbburgerweek).
+
+_Santa Barbara Burger Week 2026 runs February 19-25. All burgers are $10. No affiliation, just hungry._

@@ -1,0 +1,356 @@
+---
+title: "😶‍🌫️ Claude Cover"
+summary: "How Claude and I built a cloud cover API with weather data, satellite imagery, and computer vision"
+publishedAt: "2026-02-05"
+image: "/blog/2026-02-05/claude-cover.png"
+tags: ["AI", "developer", "tech"]
+draft: true
+---
+
+# Building a Cloud Cover API with Weather Data, Satellite Imagery, and Computer Vision
+
+I wanted to know if it's cloudy at the beach near my home in Santa Barbara.
+Instead of checking an app, I built an API that figures it out for me - pulling
+from weather services, satellite imagery, and a bit of homemade computer vision.
+
+This is the story of how I built it step by step, what worked, what didn't, and
+what I learned along the way.
+
+## The Idea
+
+The concept was simple: build a single API endpoint that answers "how cloudy is
+it at the beach right now?" But rather than just wrapping a weather API, I
+wanted to combine multiple data sources - including processing actual satellite
+images - and see how they compare.
+
+The tech stack: **Python**, **FastAPI**, **httpx** for async HTTP,
+**Pillow + NumPy** for image processing, and zero paid API keys.
+
+## Phase 1: Research - Finding Free Cloud Cover Data
+
+Before writing any code, I needed to figure out what free data sources exist.
+I evaluated seven weather APIs:
+
+| API             | API Key? | Cloud Cover Data            | Free Calls/Day |
+| --------------- | -------- | --------------------------- | -------------- |
+| **Open-Meteo**  | No       | Total + low/mid/high layers | 10,000         |
+| **NWS API**     | No       | Total (skyCover)            | Generous       |
+| OpenWeatherMap  | Yes      | Total only                  | ~33,000        |
+| Visual Crossing | Yes      | Total only                  | 1,000          |
+| Tomorrow.io     | Yes      | Total only                  | 500            |
+| WeatherAPI.com  | Yes      | Total only                  | ~33,000        |
+| Weatherbit      | Yes      | Total only                  | 50             |
+
+Two stood out immediately:
+
+**Open-Meteo** was the clear winner for development. No signup, no API key,
+and it's the only API that breaks cloud cover into low, mid, and high altitude
+layers. You can start making requests in seconds:
+
+```
+GET https://api.open-meteo.com/v1/forecast
+    ?latitude=34.4147&longitude=-119.7800
+    &current=cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high
+```
+
+**The National Weather Service API** is completely free US government data with
+no rate limits. But it has quirks - more on that later.
+
+### Lesson: Start with the simplest integration
+
+Open-Meteo let me focus on building rather than fighting with auth and API
+keys. When you're learning, reducing friction at every step matters.
+
+## Phase 2: Weather API Integration
+
+### Open-Meteo: The Easy One
+
+The Open-Meteo client was straightforward. FastAPI is async-native, so I used
+`httpx.AsyncClient` to keep everything non-blocking:
+
+```python
+async def get_current_cloud_cover() -> CloudCoverCurrent:
+    params = {
+        "latitude": LATITUDE,
+        "longitude": LONGITUDE,
+        "current": "cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high",
+        "timezone": "America/Los_Angeles",
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(BASE_URL, params=params)
+        response.raise_for_status()
+        data = response.json()
+    # ... build response model from data
+```
+
+Both services return the same Pydantic models, so the router doesn't care which
+source it's talking to. This made it easy to add a `?source=all` option that
+returns both side-by-side.
+
+### NWS: Three Gotchas in One Integration
+
+The National Weather Service API taught me more through its quirks than
+Open-Meteo taught me through its simplicity.
+
+**Gotcha #1: Two-step grid lookup.** NWS doesn't accept lat/lon for weather
+data. You first convert coordinates to a grid point, then query that grid:
+
+```
+GET /points/34.4147,-119.7800
+  -> office=LOX, gridX=102, gridY=72
+
+GET /gridpoints/LOX/102,72
+  -> skyCover and other weather data
+```
+
+I cache the grid result since it never changes for a given location.
+
+**Gotcha #2: Coordinate precision causes redirects.** Send too many decimal
+places and the NWS API returns a 301 redirect. httpx doesn't follow redirects
+by default (unlike the `requests` library), so I got a confusing error until I
+figured out I needed both `round(LATITUDE, 4)` and `follow_redirects=True`.
+
+**Gotcha #3: "Current" data isn't current.** The skyCover values come as
+time-windowed forecast periods like `2026-02-05T15:00:00+00:00/PT6H` (a 6-hour
+window starting at 15:00 UTC). I was naively taking `values[0]` - the first
+entry in the list - which was always the oldest, stale data.
+
+The fix: parse each period's start time and duration, then find the one that
+contains "now":
+
+```python
+def _find_current_value(values):
+    now = datetime.now(timezone.utc)
+    for entry in values:
+        parts = entry["validTime"].split("/")
+        start = datetime.fromisoformat(parts[0])
+        duration = _parse_nws_duration(parts[1])
+        if start <= now < start + duration:
+            return entry
+    return None
+```
+
+### Lesson: Test against real APIs early
+
+Every one of these NWS gotchas would have been invisible in mocked tests. I
+found them because I hit the real API during development. For a learning
+project, integration tests that use real endpoints catch real problems.
+
+## Phase 3: Satellite Image Processing
+
+This was the most fun part - and the most iterative.
+
+### Finding the Images
+
+The NOAA GOES Image Viewer at star.nesdis.noaa.gov shows beautiful satellite
+imagery, but it doesn't expose direct image URLs in the page source. The images
+are loaded dynamically via JavaScript.
+
+The breakthrough came from guessing at the CDN structure. NOAA hosts all
+imagery at a predictable URL:
+
+```
+https://cdn.star.nesdis.noaa.gov/GOES18/ABI/SECTOR/{sector}/{product}/{resolution}.jpg
+```
+
+The CDN directory is even browseable! This revealed the full filename pattern
+and a convenient shortcut: `1200x1200.jpg` always points to the latest image.
+
+### The Crop Box Problem
+
+Once I could fetch satellite images, I needed to figure out which pixels in
+a 1200x1200 sector image correspond to the Santa Barbara coastline. This
+turned out to be harder than expected.
+
+**Round 1:** I estimated coordinates based on mental geography. Drew boxes on
+the image, inspected them. Too far north and west.
+
+**Round 2:** Shifted south-east. Closer, but still not right.
+
+**Round 3:** This is where I changed my approach. Instead of guessing and
+re-running scripts, I added debug endpoints to the API itself:
+
+```python
+@router.get("/satellite/image/overlay")
+async def satellite_image_overlay():
+    """Return the full image with a red box showing the crop area."""
+    full_image = await satellite.fetch_latest_image()
+    annotated = satellite.draw_crop_overlay(full_image)
+    buf = BytesIO()
+    annotated.save(buf, format="JPEG")
+    buf.seek(0)
+    return StreamingResponse(buf, media_type="image/jpeg")
+```
+
+With these endpoints, I could hit `/satellite/image/overlay` in a browser,
+see exactly where the box was landing, open the source image in an editor,
+and read off the correct pixel coordinates. Problem solved in one iteration.
+
+**Lesson: Build visual debug tools early.** For any CV project, the ability
+to see what the algorithm is "seeing" isn't a nice-to-have. It's essential.
+
+### The Cloud Detection Algorithm
+
+The actual CV is beautifully simple. Clouds are bright in satellite imagery.
+Count the bright pixels:
+
+```python
+def estimate_cloud_cover(image, threshold=130):
+    grayscale = image.convert("L")
+    pixels = np.array(grayscale)
+    cloudy_pixels = np.sum(pixels > threshold)
+    return (cloudy_pixels / pixels.size) * 100
+```
+
+That's it. Four lines of actual logic.
+
+### Day vs Night: The Threshold Problem
+
+Here's where it got interesting. The GOES GeoColor product is a composite
+that looks completely different at day versus night:
+
+- **Daytime:** True color. Clouds are very bright white (~200-255 brightness).
+- **Nighttime:** IR-based. Clouds are dimmer gray (~80-160). City lights are orange.
+
+I ran a threshold sweep against the Open-Meteo API value to see the effect:
+
+| Threshold         | Satellite Estimate | Open-Meteo |
+| ----------------- | ------------------ | ---------- |
+| 80                | 88%                | 85%        |
+| 100               | 75%                | 85%        |
+| **130** (default) | **40%**            | **85%**    |
+| 180               | 6%                 | 85%        |
+
+At threshold=80, our simple pixel counter matched the professional weather API
+within 3 percentage points - on a nighttime image! The default of 130 is better
+suited for daytime.
+
+**Lesson: Simple CV can be surprisingly accurate.** You don't need machine
+learning to get useful results. A brightness threshold gets you remarkably far
+for a "is it cloudy?" question.
+
+## Phase 5: Combining Everything
+
+The final piece: merge all three sources into a single weighted estimate.
+
+### Weighting
+
+Not all sources are equally reliable:
+
+| Source       | Weight | Why                                                    |
+| ------------ | ------ | ------------------------------------------------------ |
+| Open-Meteo   | 50%    | Professional weather model, most consistent            |
+| NWS          | 30%    | Authoritative government data, coarser time resolution |
+| Satellite CV | 20%    | Our brightness counter - novel but less proven         |
+
+### Graceful Degradation
+
+The key design decision: the API should work even when sources fail. If any
+source times out, we exclude it and re-normalize the remaining weights:
+
+```python
+# If NWS is down, re-normalize:
+# Open-Meteo: 0.5 / (0.5 + 0.2) = 0.714
+# Satellite:  0.2 / (0.5 + 0.2) = 0.286
+```
+
+The response includes a `confidence` field: "high" (3 sources), "medium" (2),
+"low" (1), or "none" (all failed = 503 error).
+
+### Parallel Fetching
+
+All three sources are fetched concurrently with `asyncio.gather`:
+
+```python
+results = await asyncio.gather(
+    _fetch_open_meteo(),
+    _fetch_nws(),
+    _fetch_satellite(threshold),
+)
+```
+
+Total latency equals the slowest source (~3s for the satellite image download)
+rather than the sum of all three (~6s sequential).
+
+### The Final Response
+
+```json
+{
+  "location": "Santa Barbara, CA",
+  "cloud_cover_pct": 58.2,
+  "confidence": "high",
+  "sources_used": 3,
+  "breakdown": [
+    { "source": "open_meteo", "cloud_cover_pct": 85, "weight": 0.5 },
+    { "source": "nws", "cloud_cover_pct": 25, "weight": 0.3 },
+    { "source": "satellite", "cloud_cover_pct": 41, "weight": 0.2 }
+  ]
+}
+```
+
+Transparency over black box. Showing exactly which sources contributed and
+their weights lets anyone using the API understand and verify the result.
+
+## What I Ended Up With
+
+An API with 8 endpoints, 29 passing tests, and zero paid API keys:
+
+| Endpoint                       | Purpose                                  |
+| ------------------------------ | ---------------------------------------- |
+| `GET /estimate`                | Combined weighted cloud cover estimate   |
+| `GET /weather/current`         | Weather API data (Open-Meteo + NWS)      |
+| `GET /weather/forecast`        | Hourly forecast with layer breakdown     |
+| `GET /satellite/cloud-cover`   | CV-based estimate from satellite imagery |
+| `GET /satellite/compare`       | Side-by-side: CV vs weather API          |
+| `GET /satellite/image/overlay` | Debug: full image with crop box          |
+| `GET /satellite/image/crop`    | Debug: cropped Santa Barbara region      |
+| `GET /health`                  | Health check                             |
+
+## What I'd Do Differently
+
+1. **Add day/night auto-detection** to adjust the satellite threshold
+   automatically. The GeoColor composite changes character completely between
+   day and night.
+
+2. **Use IR Band 13** instead of GeoColor for the satellite processing. IR
+   works consistently day and night since it measures cloud-top temperature
+   rather than reflected light.
+
+3. **Cache satellite images.** Right now every request downloads a fresh
+   ~650KB image from the NOAA CDN. A simple TTL cache would cut latency and
+   be polite to NOAA's servers.
+
+4. **Add a webcam source.** A beach webcam would give ground-level cloud cover
+   from below, complementing the satellite's top-down view.
+
+## Key Takeaways
+
+**Start with the simplest possible thing.** Open-Meteo needed zero setup.
+The satellite CV is four lines of logic. The weighting is a simple average.
+None of these are sophisticated, but together they produce a genuinely useful
+result.
+
+**Build debug tools, not just features.** The `/satellite/image/overlay`
+endpoint that shows the crop box on the satellite image took 10 lines of
+code and saved hours of guessing. For CV work especially, being able to see
+what your algorithm sees is non-negotiable.
+
+**Test against real systems.** Every NWS bug - the redirect on coordinate
+precision, the stale data from taking `values[0]` - was invisible in
+isolation. They only showed up when hitting the real API.
+
+**Transparency beats accuracy.** The `/estimate` endpoint could just return
+a number. But showing the per-source breakdown, weights, and confidence
+level makes the API trustworthy. Users can see when sources disagree and
+make their own judgment.
+
+**Different data sources disagree, and that's a feature.** Open-Meteo
+saying 85% while NWS says 25% isn't a bug - it reflects different models,
+different time resolutions, and different spatial granularity. Having
+multiple perspectives is more honest than pretending any single source is
+ground truth.
+
+---
+
+_Built with Python, FastAPI, and Claude Code. Source code on
+[GitHub](https://github.com/samgutentag/cloud-cover)._
