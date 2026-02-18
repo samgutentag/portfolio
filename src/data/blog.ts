@@ -21,6 +21,7 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypePrettyCode from "rehype-pretty-code";
+import rehypeRaw from "rehype-raw";
 import rehypeStringify from "rehype-stringify";
 import { createHighlighter } from "shiki";
 import { visit } from "unist-util-visit";
@@ -76,7 +77,7 @@ export async function markdownToHTML(markdown: string): Promise<string> {
   const result = await unified()
     .use(remarkParse)
     .use(remarkGfm)
-    .use(remarkRehype)
+    .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypePrettyCode, {
       theme: {
         light: "min-light",
@@ -89,6 +90,7 @@ export async function markdownToHTML(markdown: string): Promise<string> {
           langAlias: { prompt: "shellscript" },
         }),
     })
+    .use(rehypeRaw)
     .use(rehypeWrapTables)
     .use(rehypeStringify)
     .process(markdown);
