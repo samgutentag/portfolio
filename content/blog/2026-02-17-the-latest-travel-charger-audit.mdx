@@ -3,27 +3,40 @@ title: "🔋 The Latest Travel Charger Audit"
 summary: "7 Devices, 6 Items, Zero Spreadsheets"
 publishedAt: "2026-02-17"
 tags: ["AI", "travel", "tech", "claude"]
+draft: true
 ---
 
-## The Trip Packing Tax
+## Travel Charging Repetition
 
-Every work trip starts the same way. I stare at a pile of chargers on my desk and try to figure out which combination of wall blocks, cables, and battery banks will keep seven devices alive for the week. iPhone, Apple Watch, MacBook, iPad, AirPods Max, AirPods Pro, and a battery bank that itself needs charging.
+At some point in the process of packing for every trip I take (especially now with small children) I make a point to "figur eout which chargers we need and not take anything extra" and think to myself "I should just have this done from last time, I should figure this out once and for all" and... I never do that.
 
-It's not hard, exactly. It's just _annoying_. Every device has its own charging input. Some share USB-C, one still uses Lightning (looking at you, AirPods Max), and the Apple Watch needs its magnetic puck. Then there's the optimization puzzle: which wall block powers what, what can charge through the battery bank's passthrough, what needs to swap in the morning after something else finishes overnight.
+Packing travel chargers is not a hard task (and getting easier over time, thank you USB-C) but its _annoying_ to spend any time at all thinking this through.
 
-I've done this mental exercise dozens of times. I never write it down, so I re-derive it from scratch every trip. It takes 15 minutes of staring at cables, second-guessing myself, and inevitably throwing in one extra charger "just in case."
+Keep things simple, here is what I pack for myself on say a work trip:
 
-## This Time I Described the Problem Instead
+- MacBook (or work stuff, and I like "the big screen for important stuff", I'm a millenial after all)
+- Airpods Max (Old Lightning port version)
+- Airpods Pro (yea thats right, two different AirPods)
+- Apple Watch
+- Anker Travel Battery Bank (Its got built in USB-C cables, more on that later)
+- iPad Pro (not always, so I keep this as a "stretch goal" item, really depends on the length of flights)
+- 1-2 Anker GaN USB-C wall charging blocks (i have a bunch, so its typically a pair, a 65W and a 45W that make it into my bag)
+
+Some share USB-C, one still uses Lightning (looking at you, AirPods Max), and the Apple Watch needs its magnetic puck. Then there's the optimization puzzle: which wall block powers what, what can charge through the battery bank's passthrough, what needs to swap in the morning after something else finishes charging overnight.
+
+I've done this mental exercise dozens of times without ever write it down, so I re-derive it from scratch every trip: Spend 15 minutes staring at cables, grab 3 of each, and inevitably throwing in one extra charger "just in case."
+
+## This Time I Gave the Problem to Claude
 
 I opened Claude and typed out my devices, their charging inputs, and the wall blocks I own. No spreadsheet, no diagram, just a plain description of the constraints:
 
 ```prompt title="Claude Desktop Prompt"
-Here are my devices and what charges them. Here are the wall blocks I have. The Anker battery bank has built-in USB-C output cables and supports passthrough charging. Minimize what I pack.
+Here are my devices and what charges them. Here are the wall blocks I have. The Anker battery bank has 2 built-in USB-C output cables and supports passthrough charging. Minimize what I pack.
 ```
 
-That's it. Within a couple minutes Claude had mapped out the full charging topology: which block powers what, what chains through the battery bank, what swaps in the morning after the big draws finish overnight.
+Claude thought for a bit and gave me a mapped out version of the full charging topology: which block powers what, what chains through the battery bank, what swaps in the morning after the bigger/more important charges finish overnight.
 
-The answer was **2 wall blocks + 1 battery bank + 3 cables**. Six items to charge seven devices. The 65W block stays home because the 67W does everything it does and then some.
+The answer was **2 wall blocks + 1 battery bank + 3 cables**. Six items to charge seven devices.
 
 ## The Charging Tree
 
@@ -58,19 +71,19 @@ For reference, here's what goes in the bag:
 
 **Power Sources (3)**
 
-| Item | Purpose |
-|------|---------|
+| Item                                                         | Purpose                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [67W USB-C Wall Block](https://www.amazon.com/dp/B0C33KSJNF) | Primary — powers bank passthrough, direct MacBook on flights |
-| [45W USB-C Wall Block](https://www.amazon.com/dp/B0BQLHGLG4) | Dedicated Apple Watch overnight |
-| [Anker Battery Bank](https://www.amazon.com/dp/B0DCBB2YTR) | Hub overnight + travel power (built-in USB-C output cables) |
+| [45W USB-C Wall Block](https://www.amazon.com/dp/B0BQLHGLG4) | Dedicated Apple Watch overnight                              |
+| [Anker Battery Bank](https://www.amazon.com/dp/B0DCBB2YTR)   | Hub overnight + travel power (built-in USB-C output cables)  |
 
 **Cables (3)**
 
-| Item | Purpose |
-|------|---------|
-| [USB-C to USB-C Cable](https://www.amazon.com/dp/B0DK5G316X) | Block → bank input / block → MacBook on flights |
-| [USB-C to Lightning Cable](https://www.amazon.com/dp/B08GFLBXSZ) | AirPods Max |
-| [Apple Watch Magnetic Cable](https://www.amazon.com/dp/B0CHX5CS34) | Apple Watch (USB-C end) |
+| Item                                                               | Purpose                                         |
+| ------------------------------------------------------------------ | ----------------------------------------------- |
+| [USB-C to USB-C Cable](https://www.amazon.com/dp/B0DK5G316X)       | Block → bank input / block → MacBook on flights |
+| [USB-C to Lightning Cable](https://www.amazon.com/dp/B08GFLBXSZ)   | AirPods Max                                     |
+| [Apple Watch Magnetic Cable](https://www.amazon.com/dp/B0CHX5CS34) | Apple Watch (USB-C end)                         |
 
 Six items. Seven devices. Every trip, no thinking required.
 
