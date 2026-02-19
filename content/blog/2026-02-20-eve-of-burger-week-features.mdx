@@ -1,0 +1,105 @@
+---
+title: "👨🏻‍💻 Eve-of-Event Feature Rush"
+summary: "Adding a Random Picker and Stats Dashboard the Night Before Burger Week"
+publishedAt: "2026-02-20"
+image: "/blog/2026-02-10/screen.png"
+tags: ["AI", "developer", "tech", "burgers", "claude code"]
+draft: true
+---
+
+## The Night Before
+
+Burger Week starts tomorrow. The app is live, the data is loaded, tracking is collecting events. Everything works. So naturally, it's time to add two more features.
+
+This is the part of a project where scope creep should be terrifying, but with Claude Code doing the heavy lifting, "what if we also..." becomes a fifteen-minute conversation instead of a two-hour rabbit hole.
+
+## Feature 1: "Pick for Me"
+
+Forty-eight locations is a lot. You open the map, scroll through the list, and... decision paralysis. A friend said "can it just pick one for me?" and that's all it took.
+
+The implementation is a button in the top-right corner of the map, sitting next to the existing print FAB. Click it and the map flies to a random restaurant from whatever's currently visible. If you've filtered to Goleta or searched for "smash," it picks from that subset. On mobile, the drawer snaps down so you can see the map and popup.
+
+The fun part was choosing the icon. I went through several iterations with Claude Code:
+
+- **Dice emoji** — looked out of place next to the printer's line-art SVG
+- **Text pill "Pick for me"** — too wide, broke the visual balance
+- **"RANDOM" in a circle** — tiny uppercase text in a 44px circle, hard to read
+- **Compass spin SVG** — nice but too generic
+- **Magic wand SVG** — fun but unclear what it does
+- **Burger emoji** — perfect. It's the theme emoji from `config.js`, so it's fork-friendly too
+
+Six iterations on a button icon in maybe five minutes. Each one was a single exchange: "try this instead" → instant change → reload → "hmm, how about..." The feedback loop with Claude Code is fast enough that aesthetic decisions don't feel expensive.
+
+The actual random picker logic is straightforward. It re-derives the filtered restaurant list from the current area filter and search term, picks a random index, then reuses the same fly-to-and-open-popup pattern from the sidebar click handler. Same spiderfy-if-clustered logic, same mobile drawer snap. Nothing new, just wired to a new trigger.
+
+```js
+function pickRandom() {
+  var list = getFilteredList();
+  if (list.length === 0) return;
+  var r = list[Math.floor(Math.random() * list.length)];
+  var marker = markerMap.get(r.name);
+  if (!marker) return;
+
+  if (window.innerWidth <= 768) {
+    snapDrawerTo(0);
+  }
+  map.flyTo([r.lat, r.lng], 17, { duration: 0.8 });
+
+  setTimeout(function () {
+    var parent = clusterGroup.getVisibleParent(marker);
+    if (parent && parent !== marker) {
+      parent.spiderfy();
+      setTimeout(function () {
+        marker.openPopup();
+      }, 300);
+    } else {
+      marker.openPopup();
+    }
+  }, 900);
+}
+```
+
+The embed gets the same feature since it has its own self-contained JS. Copy-paste with the mobile drawer logic removed (the embed redirects mobile users to the full site anyway).
+
+## Feature 2: Stats Dashboard
+
+The [tracking post](/blog/2026-02-19-whos-actually-clicking) ended with "I'll actually know which burgers people are most excited about." Now there's a page to prove it.
+
+`/stats` is a new standalone page that shows aggregate engagement data: total views, total direction clicks, total shares, and a restaurant leaderboard ranked by score. The score formula is simple: views plus intent actions (directions, website, phone, shares) weighted 3x. The idea is that getting directions to a restaurant is a much stronger signal than glancing at a popup.
+
+The interesting part was the Worker update. The existing GET endpoint returns `{name: {views, intents}}` for the trending badges on the main map. The stats page needs more granularity: how many Apple Maps vs Google Maps clicks, how many website visits, how many shares. But I didn't want to break the existing endpoint that `app.js` depends on.
+
+The solution is a `?detail=true` query parameter. Without it, the Worker runs the original aggregation query and returns the same `{views, intents}` shape. With it, the Worker runs a different query that groups by both restaurant name and action type:
+
+```sql
+SELECT blob2 AS name, blob1 AS action, COUNT(*) AS count
+FROM sbburgerweek
+WHERE timestamp >= toDateTime('2026-02-19 08:00:00')
+  AND blob1 != 'test'
+GROUP BY blob2, blob1
+ORDER BY count DESC
+LIMIT 2000
+```
+
+The response becomes `{"Restaurant Name": {"view": 42, "directions-google": 8, "website": 3, ...}}`. The stats page fetches this, computes the scores, and renders a leaderboard table with per-action columns. Area color dots come from `AREA_COLORS` in `data.js`, and the fire emoji ranking reuses the same `getTrendingFires` tier logic from the main app.
+
+If the fetch fails (Worker down, `trackUrl` is null, network issue), the page falls back to `trending.js` static data with estimated breakdowns. Not perfect, but better than a blank page.
+
+## The Stack Advantage
+
+Both features went from idea to merged PR in one session. The entire workflow:
+
+1. Plan both features in one conversation
+2. Branch, implement, commit feature 1
+3. Branch, implement, commit feature 2
+4. Push both branches, create PRs, merge, deploy Worker
+
+No build step to debug. No dependency conflicts. No CI pipeline to wait on. The Worker deploy was a single `npx wrangler deploy`. GitHub Pages picks up the static files automatically on merge to main.
+
+This is the payoff of the [no-build-step architecture](/blog/2026-02-10-let-claude-cook-burgers): adding a feature means adding files and editing files. That's it. Claude Code can do that very fast.
+
+---
+
+The map is live at [sbburgerweekmap.com](https://sbburgerweekmap.com). Stats at [sbburgerweekmap.com/stats](https://sbburgerweekmap.com/stats). Code on [GitHub](https://github.com/samgutentag/sbburgerweek).
+
+_Santa Barbara Burger Week 2026 runs February 19-25. All burgers are $10. No affiliation, just hungry._
