@@ -1,0 +1,297 @@
+---
+title: "🎨 Taming Logo SVGs at Scale"
+summary: "Generating Color Variants, Trimming Bounding Boxes, and Building a WCAG Preview Tool"
+publishedAt: "2026-02-20"
+tags: ["developer", "tech", "svg", "accessibility", "claude code"]
+draft: true
+---
+
+## The Problem
+
+Our marketing site has a scrolling logo bar. Trusted by thousands of engineers, that kind of thing. Sixteen company logos, each an SVG, each originally downloaded from the company's press kit or brand page. They worked, but they were a mess.
+
+Some had hardcoded brand colors. Some were black. Some were white for dark backgrounds. A few had no explicit fill at all (defaulting to black). The dimensions were all over the place: one was 1389x179, another had a viewBox starting at negative coordinates, another had width/height attributes that disagreed with its viewBox. When we needed a logo on a different background color, someone would go find the original SVG, open it in Figma, change the fill, export, and drop it in the repo. Sixteen logos times four contexts (dark bg, light bg, gray treatments) equals a lot of one-off files with no naming convention.
+
+I wanted four standardized color variants of every logo, organized into company subdirectories, with a preview tool that shows WCAG contrast compliance at a glance.
+
+## Step 1: Generating the Variants
+
+Each logo needed four fills:
+
+| Variant      | Fill      | Use Case                    |
+| ------------ | --------- | --------------------------- |
+| `dark`       | `#000000` | Light backgrounds           |
+| `light`      | `#FFFFFF` | Dark backgrounds            |
+| `gray-dark`  | `#6B6B6B` | Subtle on light backgrounds |
+| `gray-light` | `#A7A7A7` | Subtle on dark backgrounds  |
+
+The gray values came from existing Cockroach Labs logo variants that were already in the repo and looked good.
+
+The tricky part is that SVGs specify fill colors in at least three different ways:
+
+1. **`fill="..."` attributes** on path/rect/circle elements (most common)
+2. **CSS `fill:...;` in `<style>` blocks** (Gusto's logo used `.st0{fill:#F45D48;}`)
+3. **No fill at all** (Glydways used masks with no fill attributes, inheriting the default black)
+
+And you can't blindly replace every fill value. `fill="none"` means transparent, which is structural. `fill="url(#gradient)"` references a gradient definition. Replace those and the logo breaks.
+
+The bash script handles all three patterns:
+
+```bash
+for dir in public/home/logos/*/; do
+  company=$(basename "$dir")
+  # Find the source SVG (use -dark as reference since all share the same paths)
+  src="$dir/${company}-dark.svg"
+  [ ! -f "$src" ] && continue
+
+  for variant in light gray-dark gray-light; do
+    case $variant in
+      light)     color="#FFFFFF" ;;
+      gray-dark) color="#6B6B6B" ;;
+      gray-light) color="#A7A7A7" ;;
+    esac
+
+    dest="$dir/${company}-${variant}.svg"
+    cp "$src" "$dest"
+
+    # Pattern 1: fill="..." attributes (but not fill="none" or fill="url(...)")
+    sed -i '' -E 's/fill="#[0-9a-fA-F]{3,6}"/fill="'"$color"'"/g' "$dest"
+
+    # Pattern 2: CSS fill:...; in <style> blocks
+    sed -i '' -E 's/fill:#[0-9a-fA-F]{3,6};/fill:'"$color"';/g' "$dest"
+
+    # Pattern 3: SVGs with no fill (add fill to root <svg> tag)
+    if ! grep -q 'fill=' "$dest"; then
+      sed -i '' 's/<svg /<svg fill="'"$color"'" /' "$dest"
+    fi
+  done
+done
+```
+
+The negative lookahead for `fill="none"` and `fill="url(..."` is handled by the regex only matching hex color patterns. Since `none` and `url(...)` don't match `#[0-9a-fA-F]{3,6}`, they survive untouched.
+
+After running this across all sixteen companies, the directory structure went from a flat pile of inconsistently named files to:
+
+```
+public/home/logos/
+  brex/
+    brex-dark.svg
+    brex-light.svg
+    brex-gray-dark.svg
+    brex-gray-light.svg
+  caseware/
+    ...
+  google/
+    ...
+  (16 companies, 64 SVGs total)
+```
+
+## Step 2: The Preview Page
+
+Sixty-four SVGs need a quick way to visually verify. I built a self-contained HTML file (no build step, just open it in a browser) with three view modes:
+
+**ADA Mode** is the default and the most useful. Each column gets a background that provides maximum contrast for its fill color: dark logos on white, light logos on near-black, gray variants on their respective contrasting backgrounds. Every cell shows three WCAG badges (AA Large, AA, AAA) and the computed contrast ratio.
+
+**Light/Dark Modes** put all logos on a uniform background for quick scanning.
+
+The contrast math is straightforward relative luminance per the WCAG 2.0 spec:
+
+```js
+function luminance(r, g, b) {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
+    c = c / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+function contrastRatio(l1, l2) {
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+```
+
+Each cell computes the ratio between its background color and the known fill color of that column (`#000`, `#6B6B6B`, `#A7A7A7`, or `#FFF`), then applies the WCAG thresholds:
+
+| Badge    | Minimum Ratio |
+| -------- | ------------- |
+| AA Large | 3:1           |
+| AA       | 4.5:1         |
+| AAA      | 7:1           |
+
+The badges are tiny colored pills: green for pass, red for fail. Positioned absolute in the top-left of each cell so they don't shift the logo layout.
+
+There's also a hidden fourth mode, a custom contrast checker with a color picker and RGB sliders, similar to WebAIM's contrast checker. The button is commented out in the HTML but the code is still there. Uncomment the button and it's fully functional. Useful for testing a specific background color against all four fill variants at once.
+
+You can try a [live version of the preview tool](/dev/logo-review) with sample logos.
+
+## Step 3: Trimming the Bounding Boxes
+
+With the variants generated and visually verified, I noticed the sizing problem. All logos are rendered at `height: 28px` in the scrolling bar, but some appeared tiny because their SVG viewBox included massive amounts of empty space.
+
+The worst offender was Gusto: `viewBox="-153 -46 652 652"`. That's a 652x652 canvas for a logo that actually occupies about 600x228 pixels of it. The rest is transparent padding. When the browser scales it to 28px height, the actual logo fills maybe 10px of that.
+
+The fix is a Node.js script that computes the tight bounding box of the actual SVG content, then updates the viewBox to crop out the empty space. The key insight: since all four variants per company have identical paths (just different fills), we only need to compute the bbox once per company and apply it to all four files.
+
+```js
+import { svgPathBbox } from "svg-path-bbox";
+import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
+import { join } from "path";
+
+const LOGOS_DIR = process.argv[2] || "./public/home/logos";
+
+function extractPaths(svgContent) {
+  const paths = [];
+  const pathRegex = /<path[^>]*\bd="([^"]+)"/g;
+  let match;
+  while ((match = pathRegex.exec(svgContent)) !== null) {
+    paths.push(match[1]);
+  }
+  return paths;
+}
+
+function extractEllipses(svgContent) {
+  const ellipses = [];
+  const regex = /<ellipse[^>]*>/g;
+  let match;
+  while ((match = regex.exec(svgContent)) !== null) {
+    const tag = match[0];
+    const cx = parseFloat(tag.match(/\bcx="([^"]+)"/)?.[1] || "0");
+    const cy = parseFloat(tag.match(/\bcy="([^"]+)"/)?.[1] || "0");
+    const rx = parseFloat(tag.match(/\brx="([^"]+)"/)?.[1] || "0");
+    const ry = parseFloat(tag.match(/\bry="([^"]+)"/)?.[1] || "0");
+    if (rx > 0 && ry > 0) ellipses.push([cx - rx, cy - ry, cx + rx, cy + ry]);
+  }
+  return ellipses;
+}
+
+function computeBBox(svgContent) {
+  const pathDatas = extractPaths(svgContent);
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+
+  for (const d of pathDatas) {
+    const [x1, y1, x2, y2] = svgPathBbox(d);
+    if (isFinite(x1)) {
+      minX = Math.min(minX, x1);
+      minY = Math.min(minY, y1);
+      maxX = Math.max(maxX, x2);
+      maxY = Math.max(maxY, y2);
+    }
+  }
+
+  // Also check rect, circle, ellipse elements
+  for (const [x1, y1, x2, y2] of extractEllipses(svgContent)) {
+    minX = Math.min(minX, x1);
+    minY = Math.min(minY, y1);
+    maxX = Math.max(maxX, x2);
+    maxY = Math.max(maxY, y2);
+  }
+
+  if (!isFinite(minX)) return null;
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+function updateSvgViewBox(svgContent, bbox) {
+  const vb = `${r(bbox.x)} ${r(bbox.y)} ${r(bbox.w)} ${r(bbox.h)}`;
+  return svgContent.replace(/<svg([^>]*)>/, (match, attrs) => {
+    let clean = attrs
+      .replace(/\s*width="[^"]*"/g, "")
+      .replace(/\s*height="[^"]*"/g, "")
+      .replace(/\s*viewBox="[^"]*"/g, "")
+      .trim();
+    return `<svg ${clean ? clean + " " : ""}viewBox="${vb}">`;
+  });
+}
+
+const r = (n) => Math.round(n * 100) / 100;
+
+const dirs = readdirSync(LOGOS_DIR).filter((f) =>
+  statSync(join(LOGOS_DIR, f)).isDirectory(),
+);
+
+for (const dir of dirs.sort()) {
+  const dirPath = join(LOGOS_DIR, dir);
+  const svgFiles = readdirSync(dirPath).filter((f) => f.endsWith(".svg"));
+  if (svgFiles.length === 0) continue;
+
+  // Compute bbox from first variant (all have same paths)
+  const content = readFileSync(join(dirPath, svgFiles[0]), "utf-8");
+  const bbox = computeBBox(content);
+  if (!bbox) {
+    console.log(`${dir}: skipped`);
+    continue;
+  }
+
+  console.log(
+    `${dir}: viewBox="${r(bbox.x)} ${r(bbox.y)} ${r(bbox.w)} ${r(bbox.h)}"`,
+  );
+
+  // Apply to all four variants
+  for (const f of svgFiles) {
+    const fp = join(dirPath, f);
+    writeFileSync(fp, updateSvgViewBox(readFileSync(fp, "utf-8"), bbox));
+  }
+}
+```
+
+The `svg-path-bbox` package does the heavy lifting. It parses SVG path `d` attributes (the `M`, `L`, `C`, `Q` commands that define curves and lines) and returns the tight bounding box `[minX, minY, maxX, maxY]`. The script also handles `<rect>`, `<circle>`, and `<ellipse>` elements by extracting their geometry attributes directly.
+
+Running it:
+
+```
+brex:        viewBox="0 0 121.63 32"
+caseware:    viewBox="1.72 19.38 1385.28 140.62"
+gusto:       viewBox="-131 160.7 599.9 228.2"    ← was -153 -46 652 652
+waabi:       viewBox="0.4 43 1753.42 499.88"      ← was 0 0 1755 586
+glydways:    viewBox="11.83 11.99 309.14 35.94"   ← was 0 0 333.17 56.806
+```
+
+Gusto went from a 652x652 canvas to 600x228. That's 65% of the viewBox that was empty space. At `height: 28px`, the actual logo content now fills the full height instead of a third of it.
+
+## The Transform Problem
+
+The script works great for SVGs where the path coordinates match the viewBox coordinate space. It doesn't work when SVG elements are inside a `<g>` with a `transform` attribute.
+
+Metabase's logo has ellipses (the dot grid icon) inside `<g transform="translate(7.283 1.558)scale(.1176)">`. The ellipses have coordinates like `cx="128"` but after the 0.1176 scale factor, they render at `cx=15`. The script sees `cx=128` and computes a bbox that's way too big.
+
+Cockroach Labs uses `fill="url(#pattern)"` references with pattern transforms. The script saw paths inside `<defs>` that define pattern tiles and included their coordinates in the bbox, making it larger than the original.
+
+Both of these needed manual fixes. Metabase got `viewBox="0 0 178 42"` (computed by hand from the transform math). Cockroach Labs was restored to its original `viewBox="0 0 534 102"` which was already correct.
+
+A more robust script would walk the SVG DOM tree, accumulate transform matrices, and apply them before computing bounds. For sixteen logos with two edge cases, manual fixes were faster than building a full SVG transform resolver.
+
+## Step 4: Updating the Imports
+
+The old imports looked like this:
+
+```ts
+import faireLogo from "~/public/home/logos/faire.svg";
+import googleLogo from "~/public/home/logos/google.svg";
+```
+
+After the reorganization:
+
+```ts
+import faireLogo from "~/public/home/logos/faire/faire-dark.svg";
+import googleLogo from "~/public/home/logos/google/google-dark.svg";
+```
+
+Four files needed updates: the homepage hero spotlight (fallback logos), the compare page hero, the BazelCon landing page, and the DeveloperWeek landing page. The BazelCon and DeveloperWeek pages used the same set of eight logos, but DeveloperWeek used `-light` variants (dark background hero) while BazelCon used `-dark` variants (light background).
+
+The original root-level SVGs were deleted. Only files with a corresponding company subdirectory were removed, anything without a matching directory (like a standalone `cockroach_labs_light.svg`) was left in place.
+
+## What I'd Do Differently
+
+The bash script for generating variants is fine for a one-time job, but it's fragile. If a new logo uses a CSS custom property for fill, or has fills specified via `style="fill:..."` inline styles, the regex won't catch it. A proper approach would parse the SVG as XML, walk the DOM, and modify fill attributes and CSS declarations through their respective APIs.
+
+The bounding box script should handle transforms. The `svg-path-bbox` library is excellent for path data, but a production-quality tool would need a matrix stack to resolve nested transforms before computing bounds. Libraries like `resvg` (Rust-based SVG renderer with Node bindings) can give you pixel-accurate bounding boxes regardless of transforms, gradients, or filters.
+
+For sixteen logos maintained by hand, regex and manual fixes work. For a pipeline processing hundreds of logos, invest in proper SVG parsing.
+
+---
+
+The final state: sixteen company directories, sixty-four SVGs, all consistently named, all with tight bounding boxes, all verifiable in a single preview page that shows WCAG compliance at a glance. The scrolling logo bar now renders every logo at the same visual weight regardless of the original SVG's coordinate system.
