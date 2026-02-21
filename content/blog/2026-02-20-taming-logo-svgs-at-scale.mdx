@@ -260,7 +260,19 @@ Metabase's logo has ellipses (the dot grid icon) inside `<g transform="translate
 
 Cockroach Labs uses `fill="url(#pattern)"` references with pattern transforms. The script saw paths inside `<defs>` that define pattern tiles and included their coordinates in the bbox, making it larger than the original.
 
-Both of these needed manual fixes. Metabase got `viewBox="0 0 178 42"` (computed by hand from the transform math). Cockroach Labs was restored to its original `viewBox="0 0 534 102"` which was already correct.
+Both of these needed manual fixes. Cockroach Labs was restored to its original `viewBox="0 0 534 102"` which was already correct. Metabase initially got `viewBox="0 0 178 42"` computed by hand from the transform math, but that still had ~29px of dead space on the right.
+
+### The Second Pass on Metabase
+
+The preview page has a debug mode: add `outline: 1px solid hotpink` to the `img` rule and you can see every logo's bounding box. Metabase's pink rectangle was visibly wider than its content. The dot grid and wordmark ended well before the right edge.
+
+To find the actual right edge, I computed both parts separately:
+
+**Ellipse group** (the dot grid icon) has `transform="translate(7.283 1.558)scale(.1176)"`. The rightmost ellipse is at `cx=236.606` with `rx=19.394`, so its right edge in local space is `256.0`. After the scale and translate: `7.283 + (256.0 × 0.1176) = 37.39`.
+
+**Path** (the "metabase" text) was computed with `svg-path-bbox`, which traced the path commands and returned a right edge of `149.07`.
+
+So the combined content ends at x=149.07, but the viewBox was `0 0 178 42` — 29 pixels of nothing. Updated to `viewBox="0 0 150 42"` across all four variants and the logo immediately rendered larger in the scrolling bar at the same `height: 28px`.
 
 A more robust script would walk the SVG DOM tree, accumulate transform matrices, and apply them before computing bounds. For sixteen logos with two edge cases, manual fixes were faster than building a full SVG transform resolver.
 

@@ -9,13 +9,13 @@ draft: true
 
 ## The Data Problem
 
-Burger Week starts February 19th. The [Independent article](https://www.independent.com/2026/02/05/burger-week-2026/) dropped on the 5th with restaurant names and addresses, but most burger descriptions were still trickling in. Some restaurants had full menu details. Some had a name but no description. Some had nothing at all.
+Santa Burger Week starts February 19th. The [Independent article](https://www.independent.com/2026/02/05/burger-week-2026/) dropped on the 5th with restaurant names and addresses, but most burger descriptions were still trickling in. Some restaurants had full menu details. Some had a name but no description. Some had nothing at all.
 
-I wanted the site live _now_ so people could start browsing restaurants and planning, but I didn't want to show incomplete data as if it were final. The app needed to handle three states gracefully: full details, partial details, and no details at all.
+In [another blog post](./2026-02-10-let-claude-cook-burgers) i wrote about making an interactive single page map, and I wanted the site live _now_ so people could start browsing restaurants and planning, but I didn't want to show incomplete data as if it were final. The app needed to handle three states gracefully: full details, partial details, and no details at all.
 
 ## From One Burger to Many
 
-The original data structure had a single `menuItem` string per restaurant. That worked fine when every place had one burger. Then I looked at the actual data more carefully. Mesa Burger has three locations, each with a different burger. Arnoldi's has two. Several restaurants were doing multiple specials.
+The original data structure had a single `menuItem` string per restaurant that worked just fine when every place had one burger. Then I looked at the actual data more carefully. Mesa Burger has three burgers. Arnoldi's has two. Several restaurants were doing multiple specials it turned out.
 
 A single string doesn't cut it when a restaurant has three different burgers with three different descriptions. So the data structure became an array:
 
@@ -38,11 +38,11 @@ menuItems: [
 
 An empty array `[]` means "we know this restaurant is participating but don't have details yet." An item with `description: null` means "we have the burger name but no description." The sidebar, popups, and print page all handle each case differently.
 
-This was a bigger change than it sounds. Every place that referenced the old `menuItem` string, the popup HTML, the sidebar subtitles, the search filter, the print layout, needed to iterate over an array instead. The embed has its own copy of the JS, so that's double the touch points. Claude Code handled the rename across all files in one pass, but the real work was deciding what the empty states should _look_ like in each context.
+This was a bigger change than it sounds given every place that referenced the old `menuItem` string: the popup HTML, the sidebar subtitles, the search filter, the print layout, needed to iterate over an array instead. The embed has its own copy of the JS, so that's double the touch points. Claude Code handled the rename across all files in one pass, but the real work was deciding what the empty states should _look_ like in each context.
 
 ## Date-Gated Data Loading
 
-With the data structure sorted, I had a new problem: I had two versions of the data file. `data.js` was the skeleton, restaurant names, addresses, and coordinates, but with empty `menuItems` arrays. `data-2026.js` had the real menu details I was filling in as restaurants confirmed their burgers.
+With the data structure sorted, I had a new problem: I had two versions of the data file. `data.js` was the skeleton, restaurant names, addresses, and coordinates, but with empty `menuItems` arrays. Thus, the new file `data-2026.js` was born! I had the real menu details I was filling in as restaurants confirmed their burgers.
 
 I didn't want to manually swap which file was loaded on launch day. So I asked Claude Code to make it automatic:
 
@@ -56,17 +56,15 @@ The solution adds a `dataLiveDate` field to `config.js`:
 dataLiveDate: "2026-02-19",
 ```
 
-Before that date, the site loads `data.js` (skeleton). At 12:01 AM on February 19th, it switches to `data-2026.js` (full details). No deploy needed, no manual swap, it just happens.
+Before that date, the site loads `data.js` (skeleton). At 12:01 AM on February 19th, it switches to `data-2026.js` (full details).
 
-There's also a `?year=2026` URL parameter that forces a specific data file, handy for testing the full data before launch day. If the forced file doesn't exist, it redirects back to the base URL instead of showing a broken page.
+> There's also a `?year=2026` URL parameter that forces a specific data file, handy for testing the full data before launch day. If the forced file doesn't exist, it redirects back to the base URL instead of showing a broken page.
 
 ## The About Modal
 
-The original header had a lot crammed into it: the event name, a link to the source article, and a Venmo tip link. On mobile it was getting tight, and I wanted to add more links (the embed page, the GitHub repo) without making the header a navigation bar.
+The original header had a lot crammed into it: the event name, a link to the source article, and a Venmo tip link. On mobile it was getting tight, and I wanted to add more links (the embed page, the GitHub repo, a [stats page](./2026-02-19-whos-actually-clicking)) without making the header a navigation bar.
 
 Claude Code moved everything into an About modal. The header kept just the event name and a single "About" link. Tap it and you get a clean modal with the source link, Venmo tip jar, embed link, GitHub repo, and attribution. Each with a short description so people know what they're tapping.
-
-This was less about the modal itself and more about information architecture. The header went from "here's everything at once" to "here's the map, tap About if you want more." On mobile especially, that freed up the entire screen for the map.
 
 ## Deep Linking and Sharing
 
@@ -76,7 +74,7 @@ Someone on reddit asked if they could share a link to a specific restaurant. The
 add deep linking so I can share a URL that opens a specific restaurant
 ```
 
-Now every restaurant gets a URL hash based on its name. Open a popup and the URL updates to `sbburgerweekmap.com/#mesa-burger-state-st`. Share that link and it flies directly to the restaurant and opens its popup.
+Now every restaurant gets a URL anchor based on its name. Open a popup and the URL updates to `sbburgerweekmap.com/#mesa-burger-state-st`. Share that link and it flies directly to the restaurant and opens its popup.
 
 The share button in each popup uses the Web Share API on mobile (the native share sheet) and falls back to copying the URL to clipboard on desktop. A small thing, but it turns the map from something you browse alone into something you can text to a friend: "we should try this one."
 

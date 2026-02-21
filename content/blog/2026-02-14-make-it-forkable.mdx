@@ -76,7 +76,7 @@ python3 apply-theme.py
 
 ## Generalizing Beyond Burgers
 
-While building the config system i realized the data file had a `burger` field on every restaurant entry. That's a pretty burger-specific name for what's really just "the featured menu item."
+While building the config system I realized the data file had a `burger` field on every restaurant entry. That's a pretty burger-specific name for what's really just "the featured menu item."
 
 ```prompt title="Claude Code Prompt"
 update the data.js, mock_data.js and references to the "burger" attribute to be "menuItem"
@@ -84,7 +84,7 @@ update the data.js, mock_data.js and references to the "burger" attribute to be 
 
 A straightforward rename across five files: `data.js`, `mock_data.js`, `app.js`, `embed.js`, and the README's fork guide. The CSS classes (`popup-burger`, `burger-icon`) stayed as-is since they're just style hooks that don't leak into the fork experience (and a throwback to the original project, why not). The config already had `itemLabel: "burger"` for display text, so the UI still says "burger" everywhere it should.
 
-Taco week, ramen week, pizza week, if it's popsicle, it's possble!
+> Taco week, ramen week, pizza week, if it's popsicle, it's possble!
 
 ## Cleaning Up the Analytics Token
 

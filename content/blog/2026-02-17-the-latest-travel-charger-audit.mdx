@@ -3,7 +3,7 @@ title: "🔋 The Latest Travel Charger Audit"
 summary: "7 Devices, 6 Items, Zero Spreadsheets"
 publishedAt: "2026-02-17"
 tags: ["AI", "travel", "tech", "claude"]
-draft: true
+draft: false
 ---
 
 ## Travel Charging Repetition
@@ -34,13 +34,13 @@ I opened Claude and typed out my devices, their charging inputs, and the wall bl
 Here are my devices and what charges them. Here are the wall blocks I have. The Anker battery bank has 2 built-in USB-C output cables and supports passthrough charging. Minimize what I pack.
 ```
 
-Claude thought for a bit and gave me a mapped out version of the full charging topology: which block powers what, what chains through the battery bank, what swaps in the morning after the bigger/more important charges finish overnight.
+Claude thought for a bit and gave me a planned out version of the full charging topology: which block powers what, what daisychains through the battery bank, what swaps in the morning after the bigger/more important charges finish overnight.
 
 The answer was **2 wall blocks + 1 battery bank + 3 cables**. Six items to charge seven devices.
 
 ## The Charging Tree
 
-The key insight (which I'd vaguely known but never committed to) is treating the battery bank as a charging _hub_, not just a portable backup. With passthrough enabled:
+The key insight (which I'd vaguely known but never committed to memory fully) is treating the battery bank as a charging _hub_, not just a portable backup. With passthrough enabled:
 
 ```
 67W Wall Block
@@ -49,15 +49,13 @@ The key insight (which I'd vaguely known but never committed to) is treating the
                     └── Built-in Output 2 → iPad
 ```
 
-One wall outlet, three devices charging simultaneously. The second outlet runs the 45W block dedicated to the Apple Watch via its magnetic cable.
+One wall outlet gives me three devices charging simultaneously (mostly, the battery wont charge itself if the power draw exceeds the power input). The second outlet runs the 45W block dedicated to the Apple Watch via its magnetic cable.
 
-In the morning, the iPad is done. Swap it for the iPhone. The Apple Watch is done — swap the 45W block's cable for a USB-C to Lightning and top off the AirPods Max. By checkout, everything is at 100%.
-
-When you leave the hotel, the wall blocks stay plugged in. You carry just the battery bank and cables. The bank's built-in output cables handle your phone and iPad on the go, and if the airplane seat has an outlet, the 67W block plugs straight into the MacBook.
+In the morning, the iPad is done. Swap it for the iPhone. The Apple Watch is done, swap the 45W block's cable for a USB-C to Lightning and top off the AirPods Max. By checkout, everything is at 100%.
 
 ## From Text to Interactive Diagram
 
-I liked the setup enough that I wanted a visual reference — something I could glance at in a hotel room instead of re-reading a text wall. So I asked Claude to build an interactive diagram that walks through each phase: overnight, morning swap, travel, and a packing checklist.
+I liked the setup enough that I wanted a visual reference I could glance at instead of puling up a note on my phone. So I asked Claude to build an interactive diagram that walks through each phase: overnight, morning swap, travel, and a packing checklist.
 
 It built a tabbed React component with the full charging topology diagrammed for each scenario. I dropped it onto my site as a standalone tool.
 
@@ -69,7 +67,7 @@ Now when I'm packing, I pull up the diagram, follow the overnight tab to plug ev
 
 For reference, here's what goes in the bag:
 
-**Power Sources (3)**
+### Power Sources
 
 | Item                                                         | Purpose                                                      |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -77,7 +75,7 @@ For reference, here's what goes in the bag:
 | [45W USB-C Wall Block](https://www.amazon.com/dp/B0BQLHGLG4) | Dedicated Apple Watch overnight                              |
 | [Anker Battery Bank](https://www.amazon.com/dp/B0DCBB2YTR)   | Hub overnight + travel power (built-in USB-C output cables)  |
 
-**Cables (3)**
+### Cables
 
 | Item                                                               | Purpose                                         |
 | ------------------------------------------------------------------ | ----------------------------------------------- |
@@ -85,15 +83,13 @@ For reference, here's what goes in the bag:
 | [USB-C to Lightning Cable](https://www.amazon.com/dp/B08GFLBXSZ)   | AirPods Max                                     |
 | [Apple Watch Magnetic Cable](https://www.amazon.com/dp/B0CHX5CS34) | Apple Watch (USB-C end)                         |
 
-Six items. Seven devices. Every trip, no thinking required.
-
 ## Why This Matters (To Me, Anyway)
 
-This isn't a hard problem. It's a _tedious_ problem. The kind of thing that's not worth building a spreadsheet for, but annoying enough that you waste 15 minutes on it every time. The mental overhead isn't the difficulty — it's that I have to re-derive the same answer from scratch because I never bother to formalize it.
+This isn't a hard problem. It's a _tedious_ problem. The kind of thing that's not worth building a spreadsheet for, but annoying enough that you waste 15 minutes on it every time. The mental overhead isn't the difficulty, it's that I have to re-derive the same answer from scratch because I never bother to formalize it.
 
 Describing the problem to Claude took about two minutes. Getting the optimized setup plus an interactive reference tool took maybe ten. That's a permanent solve for a recurring annoyance, and the activation energy was basically zero.
 
-The best part is that when my device lineup changes (goodbye Lightning AirPods Max, eventually) I can re-describe the constraints and get an updated setup in minutes. The diagram is easy to regenerate too. It's not a one-time artifact — it's a template for the next version of the problem.
+The best part is that when my device lineup changes (goodbye Lightning AirPods Max, eventually) I can re-describe the constraints and get an updated setup in minutes. The diagram is easy to regenerate too.
 
 ---
 
