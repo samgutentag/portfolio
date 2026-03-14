@@ -1,0 +1,145 @@
+---
+title: "📘 Building Smart Shade and Light Blueprints for Home Assistant"
+summary: "Reusable HA blueprints for motorized shades with window contact sensor safety, seasonal AC unit clamping, and an outdoor light sunset schedule"
+publishedAt: "2026-03-13"
+tags: ["home assistant", "smart home", "automations", "zigbee"]
+draft: true
+---
+
+## The Problem
+
+I have motorized shades on most of my windows controlled by Aqara 4-button Zigbee switches. The basic setup is straightforward — each button maps to a shade position. But real life introduces complications:
+
+- Windows get opened. If a shade closes on an open window, it can jam or damage the shade.
+- Window AC units get installed seasonally. The shade needs to close _partway_ — down to the AC unit but no further.
+- AC units come and go. Sometimes daily. Editing automations every time is not realistic.
+- I want to reuse the same logic across multiple rooms without duplicating YAML.
+
+Home Assistant blueprints solve the reuse problem, but getting the window/AC logic right took some thought.
+
+## The Aqara 4-Button Switch
+
+The Aqara WXKG11LM is a Zigbee wall switch with four physical buttons (top, center, bottom, and a wireless button that detaches). Through Zigbee2MQTT, each button supports single press, double press, and hold actions. I have three blueprint variants:
+
+- **Lights only** — brightness presets with adaptive lighting integration
+- **Shades only** — cover position presets with window safety logic
+- **Lights & Shades** — combined control, physical buttons for lights, wireless button for shades
+
+## The Shade Blueprint: Layer by Layer
+
+### Layer 1: Basic Position Control
+
+The simplest version maps each button to a cover position:
+
+| Button          | Action                                |
+| --------------- | ------------------------------------- |
+| Top             | Open (100%)                           |
+| Center          | Position preset (default 60%)         |
+| Bottom          | Position preset (default 30%)         |
+| Wireless single | Position preset (default 0% / closed) |
+| Wireless double | Custom script                         |
+
+Everything is configurable — the position percentages, and the wireless double press runs whatever action sequence the user defines. This means one blueprint works for every room regardless of how many shades or what positions make sense.
+
+### Layer 2: Window Contact Sensor Protection
+
+The first safety layer: an optional contact sensor on the window. When the window is open, the blueprint blocks shade movement on the center, bottom, and wireless single buttons. The top button (open) always works — opening a shade with the window open is fine.
+
+The key design decision: the contact sensor is **optional**. Not every window has one yet. When no sensor is configured, the blueprint works exactly like Layer 1. This is handled with a template variable:
+
+```yaml
+window_is_open: >
+  {{ window_contact_sensor | length > 0 and is_state(window_contact_sensor, 'on') }}
+```
+
+If no sensor entity is selected, the length check fails and `window_is_open` is always `false` — no blocking, no errors.
+
+### Layer 3: The Window AC Problem
+
+Blocking shade movement entirely when the window is open works great until you install a window AC unit. Now the window is _always_ open, but you still want the shade to close — just not all the way. The shade needs to stop above the AC unit.
+
+The solution has two parts:
+
+**An `input_boolean` toggle per room** — `input_boolean.bedroom_window_ac_installed`, `input_boolean.office_window_ac_installed`, etc. These are dashboard toggles that anyone in the house can flip when an AC unit goes in or comes out. No automation editing required.
+
+**A minimum position clamp** — when the AC toggle is ON and the window is open, shade positions are clamped to a configurable minimum (default 40%). The template uses Jinja's `max` filter:
+
+```yaml
+position: >
+  {% if window_is_open and ac_is_installed %}
+    {{ [requested_position, ac_min_position] | max }}
+  {% else %}
+    {{ requested_position }}
+  {% endif %}
+```
+
+So if you press the "close" button (0%), the shade goes to 40% instead. If you press the "60%" button, it goes to 60% (above the minimum, no clamping needed).
+
+### The Decision Matrix
+
+| Window    | AC Toggle | Button requests 30% | Result                            |
+| --------- | --------- | ------------------- | --------------------------------- |
+| Closed    | Any       | 30%                 | 30% (no restrictions)             |
+| Open      | OFF       | 30%                 | Blocked (nothing happens)         |
+| Open      | ON        | 30%                 | 40% (clamped to AC min)           |
+| Open      | ON        | 60%                 | 60% (above min, passes through)   |
+| No sensor | Any       | 30%                 | 30% (no sensor = no restrictions) |
+
+The logic flows through a condition check first (`not window_is_open or ac_is_installed`), then a position clamp. This means:
+
+- No contact sensor → everything works normally
+- Contact sensor, no AC toggle → window open blocks closing
+- Contact sensor + AC toggle ON → window open clamps to minimum
+- Top button (open) → always works, no conditions
+
+## The Dashboard Toggle
+
+To make the AC toggles easy to use, I built a simple dashboard card:
+
+```yaml
+type: vertical-stack
+cards:
+  - type: markdown
+    content: |
+      ## Window AC Units
+      When ON, shades clamp to a minimum position instead of fully closing.
+  - type: entities
+    show_header_toggle: false
+    entities:
+      - entity: input_boolean.office_window_ac_installed
+        name: Office
+      - entity: input_boolean.bedroom_window_ac_installed
+        name: Bedroom
+      # ... one per room
+```
+
+Anyone in the house can toggle these from the HA dashboard — no YAML editing, no automation changes. Install the AC? Flip the toggle. Remove it in the fall? Flip it back.
+
+## Bonus: Outdoor Light Sunset Schedule
+
+While working on blueprints, I also built one for outdoor lights that follows the sun:
+
+| Time                 | Brightness        |
+| -------------------- | ----------------- |
+| 1 hour before sunset | 100% (turns on)   |
+| Sunset               | 80% (30-min fade) |
+| 10:00 PM             | 60% (30-min fade) |
+| Midnight             | 40% (overnight)   |
+| Sunrise              | 80% (30-min fade) |
+| 1 hour after sunrise | Off               |
+
+Everything is configurable — the offsets, brightness levels, transition times, and the evening/overnight time thresholds. The transitions use HA's built-in light transition support, so the dimming is smooth rather than stepped.
+
+The blueprint uses sun triggers with offsets for the sunrise/sunset events, and time triggers for the fixed evening milestones. This means the on/off times automatically shift with the seasons — no manual adjustment needed.
+
+## Lessons Learned
+
+**Make everything optional with sensible defaults.** Not every window has a contact sensor. Not every room has an AC unit. The blueprint needs to work in the simplest case (just a switch and some shades) and scale up gracefully.
+
+**Use `input_boolean` helpers for state that changes frequently.** Editing automations for seasonal changes doesn't scale. Dashboard toggles let anyone in the house make the change.
+
+**Template variables are your friend.** Computing `window_is_open` and `ac_is_installed` once as variables, then referencing them in multiple conditions and templates, keeps the YAML readable and consistent.
+
+**The `| max` filter for clamping.** `{{ [requested, minimum] | max }}` is a clean one-liner for "never go below this value." It reads naturally and handles edge cases automatically.
+
+**Blueprints beat copy-paste.** With 6 rooms of shades, maintaining 6 separate automations would be painful. One blueprint, six instances, and changes propagate everywhere.

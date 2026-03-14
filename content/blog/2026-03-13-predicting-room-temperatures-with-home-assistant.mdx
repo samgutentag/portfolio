@@ -1,0 +1,239 @@
+---
+title: "📈 Predicting Room Temperatures with Home Assistant Sensor Data"
+summary: "Using Ridge regression to forecast room temperatures up to 12 hours ahead, trained on attic temp, solar radiation, HVAC state, and other HA sensors"
+publishedAt: "2026-03-13"
+tags: ["home assistant", "machine learning", "python", "smart home"]
+draft: true
+---
+
+## The Goal
+
+I have a house full of sensors — temperature sensors in every room, an attic sensor, a weather station outside, solar panels on the roof, and smart thermostats controlling the HVAC. What if I could use all of that data to predict what the temperature in a given room will be an hour from now?
+
+The idea is simple: the attic heats up before the rooms below it. Solar radiation and sun position tell you how much heat is coming. The HVAC system tells you if active heating or cooling is fighting that trend. If you combine all of those signals, you should be able to predict where room temperatures are heading.
+
+## Why This Matters
+
+- **Smarter HVAC automations** — instead of reacting to temperature thresholds, act on predictions. Start cooling before a room gets too hot.
+- **Energy savings** — if you know the house will naturally cool down as the sun sets, maybe you can delay turning on the AC.
+- **Curiosity** — how well can a simple model predict temperature with the sensors I already have?
+
+## The Sensor Inventory
+
+The system draws from several categories of Home Assistant entities:
+
+**Room temperature sensors (the targets):**
+
+- North Bedroom, South Bedroom, Bedroom, and Office — each has a Zigbee environment sensor, and most also have Ecobee and CO2 sensor temperature readings
+- Home Assistant already computes temperature derivatives (rate of change) for each room
+
+**Environmental inputs (the predictors):**
+
+- Attic temperature + its derivative (the attic acts as a thermal leading indicator)
+- Outdoor temperature from an Ecowitt weather station
+- Solar radiation (W/m²) and solar lux from the weather station
+- Current solar panel power production from an Enphase Envoy system
+- Sun elevation and azimuth from Home Assistant's built-in sun entity
+
+**HVAC state:**
+
+- Ecobee thermostat — covers the whole house (bedrooms, living areas)
+- Office heat pump — independent mini-split for the office
+- These are encoded as binary features: is_heating, is_cooling
+
+## The Approach
+
+### Keep It Simple: Ridge Regression
+
+For the first iteration, I'm using Ridge regression from scikit-learn. The reasoning:
+
+- With ~11 days of 5-minute data (~3,000 rows) and ~18 features, a simple linear model is appropriate
+- Ridge handles correlated features well (solar radiation and solar lux are highly correlated, for example)
+- The model coefficients are interpretable — you can see exactly which features drive predictions for each room
+- It trains in milliseconds, making frequent retraining practical
+
+Each room gets its own model, which lets the system learn room-specific behavior. A south-facing room responds differently to sun position than a north-facing room.
+
+### Seasonal Adaptation: Rolling Training Window
+
+A model trained on winter data won't predict well in summer. To handle this, the system uses a **rolling 30-day training window**. Every time the model retrains, it pulls the most recent 30 days of data from Home Assistant. Old data naturally falls off. This means:
+
+- By mid-spring, winter data is gone and the model reflects spring patterns
+- A weekly automated retrain keeps the model current
+- The window size (30 days) is configurable — longer keeps more context, shorter adapts faster
+
+### Feature Engineering
+
+Beyond the raw sensor values, the model includes:
+
+- **Cyclical time encoding** — hour-of-day and day-of-week encoded as sine/cosine pairs, so the model knows that 11pm is close to midnight (not 23 hours away)
+- **Temperature derivatives** — how fast a room is warming or cooling, which captures thermal momentum
+- **HVAC binary flags** — is the heat on? Is the AC on? These are strong predictors that override solar/thermal trends
+
+## Building It: Step by Step
+
+### Phase 1: Data Extraction
+
+The first script (`extract_history.py`) pulls historical sensor data from the Home Assistant REST API.
+
+Key decisions:
+
+- **REST API over direct database access** — the API works regardless of how HA is deployed (Docker, HAOS, bare metal)
+- **5-minute resampling** — all sensors report at different cadences, so we resample everything to a common 5-minute grid using forward-fill
+- **Token management** — the HA long-lived access token is loaded from a `.env` file via python-dotenv, kept out of version control
+
+The script pulls data for all input sensors, room temperature targets, HVAC climate entities, and the sun entity. Climate entities get special handling — their state ("heat", "cool", "off") and `hvac_action` attribute are converted to binary `is_heating` / `is_cooling` flags.
+
+The initial extraction yielded ~3,100 rows across 18 columns, with usable data starting March 3rd (about 11 days of history).
+
+### Phase 2: Model Training
+
+The training script (`train_model.py`) takes the extracted CSV and trains one Ridge regression model per room.
+
+The process:
+
+1. Load the CSV and add cyclical time features
+2. Forward-fill HVAC columns (they only log on state changes, so gaps are expected)
+3. For each room, construct the target variable by shifting the room's temperature column forward by the forecast horizon (60 minutes = 12 five-minute steps)
+4. Split chronologically (80% train / 20% test — no random shuffling, which would leak future data)
+5. Scale features with StandardScaler, fit Ridge regression
+6. Evaluate with MAE and RMSE on the held-out test set
+7. Save the model, scaler, feature list, and metrics as a joblib bundle
+
+#### Results — Single Horizon (1 Hour)
+
+The initial training run with a single 60-minute forecast produced surprisingly strong results — sub-half-degree accuracy across all four rooms:
+
+| Room          | MAE (°F) | RMSE (°F) |
+| ------------- | -------- | --------- |
+| North Bedroom | 0.22     | 0.29      |
+| South Bedroom | 0.19     | 0.26      |
+| Bedroom       | 0.35     | 0.45      |
+| Office        | 0.38     | 0.46      |
+| **Average**   | **0.28** | **0.37**  |
+
+#### Expanding to a Full Forecast Curve
+
+A single prediction point isn't enough to plot a forecast for the rest of the day. So I updated the system to train separate models at every 30-minute interval from 0.5 hours to 12 hours — 24 horizons per room, 96 models total. Ridge regression trains in milliseconds, so this adds negligible time.
+
+The key question: how does accuracy degrade as you predict further out?
+
+**MAE by forecast horizon (°F):**
+
+| Room          | 0.5h | 1h   | 2h   | 3h   | 6h   | 12h  |
+| ------------- | ---- | ---- | ---- | ---- | ---- | ---- |
+| North Bedroom | 0.20 | 0.28 | 0.37 | 0.57 | 1.25 | 1.82 |
+| South Bedroom | 0.13 | 0.18 | 0.26 | 0.44 | 1.26 | 1.72 |
+| Bedroom       | 0.26 | 0.39 | 0.36 | 0.42 | 0.64 | 1.10 |
+| Office        | 0.20 | 0.38 | 0.64 | 0.90 | 1.46 | 2.48 |
+
+The degradation is gradual and predictable:
+
+- **0–3 hours:** Sub-degree accuracy across all rooms. Highly usable for short-term HVAC decisions.
+- **3–6 hours:** 0.5–1.5°F error. Still useful for trend visualization and general planning.
+- **6–12 hours:** 1–2.5°F error. Good enough to show the general shape of the day's temperature curve.
+
+The bedroom stands out as remarkably stable — only 1.10°F MAE even at 12 hours. It likely has more thermal mass or less exposure to rapid changes.
+
+The office degrades fastest (2.48°F at 12h), which makes sense — it has an independent mini-split heat pump whose on/off cycles are harder to predict far in advance.
+
+#### Switching to Averaged Temperature Sensors
+
+An early improvement: three of the four rooms have multiple temperature sensors (Zigbee, Ecobee, CO2), and Home Assistant already computes an average across them. Switching the prediction targets from single sensors to these averages had two benefits:
+
+1. **More robust to sensor failure** — if a battery dies on one sensor, the average still computes from the remaining sensors, so both the training data and live predictions keep working.
+2. **Slightly better accuracy** — the averaged signal is smoother and more predictable. The bedroom's 12-hour MAE dropped from 1.40°F to 1.10°F, and training set sizes increased since the average sensors have longer history.
+
+The office still uses a single sensor since it only has one temperature sensor in the room.
+
+#### What the Coefficients Tell Us
+
+Each room gets its own model, so the feature importance differs — and the differences make physical sense:
+
+**North Bedroom** — Current room temp is the strongest predictor (+1.52), followed by attic temp (+0.64) and outdoor temp (+0.32). The derivative has a negative coefficient (-0.17), meaning if the room is already warming quickly, the model tempers its prediction slightly.
+
+**South Bedroom** — Similar pattern, but attic temp has a stronger influence (+0.90) and hour-of-day (cosine) shows up prominently (-0.33). This makes sense — a south-facing room tracks solar heating cycles more closely.
+
+**Bedroom** — Solar power production (+0.90) is the second-strongest feature after current temp (+1.82). This room clearly responds to solar gain. Solar lux appears with a negative coefficient (-0.25), likely acting as a counterbalance to the correlated solar_power feature — Ridge regression distributes weight across correlated features.
+
+**Office** — The most self-predictive room — current temp coefficient is +2.84, much higher than other rooms. Outdoor temp matters (+0.39), but solar features are less important. This makes sense if the office is on a side of the house with less direct sun exposure, or if the mini-split heat pump actively regulates the temperature.
+
+Notably, the HVAC features (ecobee_is_heating, office_heat_pump_is_heating) didn't rank in the top 5 for any room. With only 11 days of data and the HVAC mostly off during early March, there weren't enough heating/cooling events for the model to learn from yet. As the system retrains through seasons with more HVAC activity, these features should gain importance.
+
+### Phase 3: Prediction
+
+The prediction script (`predict.py`) ties it all together. It loads the trained models, fetches the current sensor values from the HA REST API, and generates a forecast curve.
+
+Three output modes:
+
+- `--pretty` — human-readable table for quick checks
+- `--csv` — for plotting in Grafana, spreadsheets, etc.
+- default (no flag) — raw JSON, designed for HA's `command_line` sensor integration
+
+Here's the first live forecast, run at 9:21pm on a March evening with all rooms around 74–75°F:
+
+| Room          | Now  | +1h  | +3h  | +6h  | +9h  | +12h |
+| ------------- | ---- | ---- | ---- | ---- | ---- | ---- |
+| North Bedroom | 75.3 | 73.9 | 72.6 | 70.7 | 68.5 | 66.5 |
+| South Bedroom | 75.2 | 74.1 | 72.9 | 70.8 | 68.5 | 66.8 |
+| Bedroom       | 74.1 | 72.6 | 71.7 | 69.4 | 67.9 | 66.5 |
+| Office        | 74.8 | 74.2 | 73.1 | 70.9 | 67.3 | 63.3 |
+
+The overnight cooling trend is exactly what you'd expect — all rooms gradually losing heat as outdoor temperatures drop and solar input is zero. The bedrooms cool at a similar rate (they share the same HVAC zone), while the office shows a steeper decline, likely due to less thermal mass and its independent heat pump being off.
+
+Missing or unavailable sensors are handled gracefully: the script uses a default value (the training mean) and logs a warning, so the forecast always produces output even if a battery dies.
+
+### Home Assistant Integration
+
+The prediction system runs on a separate machine from Home Assistant (my HA runs HAOS on a Raspberry Pi, which doesn't easily support pip-installing Python packages like scikit-learn). So the prediction pipeline runs as a lightweight Flask REST API on a dev machine, and HA polls it.
+
+#### The Server
+
+A simple Flask app (`server.py`) wraps the prediction logic with two endpoints:
+
+- `/api/health` — status check, lists available models
+- `/api/predictions` — returns the full forecast JSON for all rooms
+
+HA calls `/api/predictions` every 15 minutes via a `rest` sensor. The response includes current temperature and the full 24-point prediction curve for each room.
+
+#### HA Sensors
+
+Two layers of sensors in Home Assistant:
+
+1. **REST sensors** (one per room) — poll the prediction API and store the full forecast array as attributes. These are the raw data layer.
+2. **Template sensors** (three per room: 1h, 3h, 6h) — extract specific horizons from the REST sensor attributes for easy use in automations and dashboard cards.
+
+When the prediction server is unreachable (e.g., laptop sleeping), the sensors show their last known values rather than erroring — HA handles this gracefully with the `None` fallback in the templates.
+
+#### Dashboard Cards
+
+Each room gets an ApexCharts card showing two overlapping lines:
+
+- **Solid white line** — actual temperature from the sensor history
+- **Dimmed dashed blue line** — predicted temperature curve extending into the future
+
+The chart window is set to show 12 hours of history and 12 hours of predictions, so you can always see where temperatures are headed. The actual temperature line uses 5-minute statistical averaging to smooth out brief sensor fluctuations.
+
+#### Handling Sensor Failures
+
+Derivative sensors (rate of temperature change) frequently report `unknown` in HA — this is normal when HA doesn't have enough recent data points to calculate a rate. The prediction script silently defaults these to `0.0` (no change), which is a reasonable assumption that doesn't degrade predictions significantly.
+
+For actual temperature sensors, rooms with multiple sensors use Home Assistant's built-in average, which continues to function even if one sensor's battery dies. The office, with only a single sensor, would show `unavailable` if its sensor goes offline — the prediction still runs using the training mean as a fallback, but with reduced accuracy.
+
+### Automated Retraining
+
+A shell script (`retrain.sh`) handles the extract-and-retrain cycle:
+
+1. Activates the Python virtual environment
+2. Runs `extract_history.py` to pull the latest 30 days of sensor data
+3. Runs `train_model.py` to retrain all 96 models
+4. Logs everything to `retrain.log`
+
+A cron job triggers this every Sunday at 3am. The rolling 30-day window means each retrain naturally drops old data and picks up recent patterns, keeping the models seasonally relevant without manual intervention.
+
+### What's Next
+
+- **Dedicated server** — move from a laptop (which sleeps) to a dedicated Raspberry Pi that runs 24/7
+- **Validation over time** — compare predictions against actual temperatures over weeks to track real-world accuracy
+- **HVAC-aware automations** — use the predictions to make smarter heating/cooling decisions (e.g., "don't turn on the AC, the house will cool down naturally in 2 hours")
+- **More rooms** — adding a room is just a config change + retrain
