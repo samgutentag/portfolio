@@ -18,14 +18,6 @@ Full markdown + JSX authoring via MDX with a unified processing pipeline.
 - **Year grouping** — Archive page groups posts by year, newest first
 - **Draft support** — `unpublished: true` in frontmatter hides a post from listings
 
-### Writing Prompts
-
-A 365-day writing prompt project tracked at `/writing`.
-
-- Per-prompt pages with previous/next navigation
-- Completion counter and progress tracking
-- Same markdown rendering pipeline as the blog
-
 ### Theming
 
 - Light and dark palettes defined as CSS custom properties
@@ -75,7 +67,6 @@ Open [http://localhost:3000](http://localhost:3000).
 ```
 content/
   blog/          # MDX blog posts (frontmatter + markdown)
-  writing/       # Daily writing prompts (markdown)
 public/
   companyIcons/  # Work timeline logos
 src/
@@ -99,19 +90,6 @@ tags: ["tag-a", "tag-b"]
 ---
 
 Your content here.
-```
-
-### Writing prompts
-
-Add a file to `content/writing/` named `NNN-prompt-slug.md`:
-
-```md
----
-title: "What does joy look like to you?"
-publishedAt: "2026-01-15"
----
-
-Your response here.
 ```
 
 ## Build
