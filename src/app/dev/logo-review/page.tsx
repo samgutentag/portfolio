@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 
 // --- WCAG contrast utilities ---
 
@@ -261,14 +261,7 @@ export default function LogoReviewPage() {
           fontStyle: "italic",
         }}
       >
-        Demo version — actual logos replaced with text placeholders. See the{" "}
-        <a
-          href="/blog/2026-02-20-taming-logo-svgs-at-scale"
-          style={{ color: mode === "ada" ? "#0055cc" : mode === "dark" ? "#6ba3f7" : "#333" }}
-        >
-          blog post
-        </a>{" "}
-        for the full tool with real SVG logos.
+        Demo version — actual logos replaced with text placeholders.
       </p>
 
       <div style={{ overflowX: "auto" }}>
