@@ -37,11 +37,11 @@ And you can't blindly replace every fill value. `fill="none"` means transparent,
 
 The bash script handles all three patterns:
 
-```bash
+<TerminalBlock language="bash" title="generate color variants">
 for dir in public/home/logos/*/; do
   company=$(basename "$dir")
   # Find the source SVG (use -dark as reference since all share the same paths)
-  src="$dir/${company}-dark.svg"
+  src="$dir/\${company}-dark.svg"
   [ ! -f "$src" ] && continue
 
   for variant in light gray-dark gray-light; do
@@ -51,7 +51,7 @@ for dir in public/home/logos/*/; do
       gray-light) color="#A7A7A7" ;;
     esac
 
-    dest="$dir/${company}-${variant}.svg"
+    dest="$dir/\${company}-\${variant}.svg"
     cp "$src" "$dest"
 
     # Pattern 1: fill="..." attributes (but not fill="none" or fill="url(...)")
@@ -66,7 +66,7 @@ for dir in public/home/logos/*/; do
     fi
   done
 done
-```
+</TerminalBlock>
 
 The negative lookahead for `fill="none"` and `fill="url(..."` is handled by the regex only matching hex color patterns. Since `none` and `url(...)` don't match `#[0-9a-fA-F]{3,6}`, they survive untouched.
 
@@ -254,11 +254,11 @@ Gusto went from a 652x652 canvas to 600x228. That's 65% of the viewBox that was 
 
 ## The Transform Problem
 
-The script works great for SVGs where the path coordinates match the viewBox coordinate space. It doesn't work when SVG elements are inside a `<g>` with a `transform` attribute.
+<Callout variant="gotcha">The script works great for SVGs where the path coordinates match the viewBox coordinate space. It doesn't work when SVG elements are inside a `<g>` with a `transform` attribute.
 
 Metabase's logo has ellipses (the dot grid icon) inside `<g transform="translate(7.283 1.558)scale(.1176)">`. The ellipses have coordinates like `cx="128"` but after the 0.1176 scale factor, they render at `cx=15`. The script sees `cx=128` and computes a bbox that's way too big.
 
-Cockroach Labs uses `fill="url(#pattern)"` references with pattern transforms. The script saw paths inside `<defs>` that define pattern tiles and included their coordinates in the bbox, making it larger than the original.
+Cockroach Labs uses `fill="url(#pattern)"` references with pattern transforms. The script saw paths inside `<defs>` that define pattern tiles and included their coordinates in the bbox, making it larger than the original.</Callout>
 
 Both of these needed manual fixes. Cockroach Labs was restored to its original `viewBox="0 0 534 102"` which was already correct. Metabase initially got `viewBox="0 0 178 42"` computed by hand from the transform math, but that still had ~29px of dead space on the right.
 
@@ -295,6 +295,8 @@ import googleLogo from "~/public/home/logos/google/google-dark.svg";
 Four files needed updates: the homepage hero spotlight (fallback logos), the compare page hero, the BazelCon landing page, and the DeveloperWeek landing page. The BazelCon and DeveloperWeek pages used the same set of eight logos, but DeveloperWeek used `-light` variants (dark background hero) while BazelCon used `-dark` variants (light background).
 
 The original root-level SVGs were deleted. Only files with a corresponding company subdirectory were removed, anything without a matching directory (like a standalone `cockroach_labs_light.svg`) was left in place.
+
+<TIL>Regex-based SVG processing works for a one-time job but is fundamentally fragile. For production use, parse SVGs as XML and walk the DOM. Use `resvg` for accurate bounding boxes.</TIL>
 
 ## What I'd Do Differently
 

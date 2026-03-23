@@ -6,7 +6,7 @@ image: "/blog/2025-08-01/always-has-been-vscode.png"
 tags: ["vscode", "cursor", "AI", "developer", "tech"]
 ---
 
-Let’s cut to the chase: if you’re building one-off tools, small scripts, or experimenting with new ideas, [VSCode][vscode] with GitHub Copilot (GPT-4.1) can get you as far as [Cursor][cursor], at half the price.
+Let's cut to the chase: if you're building one-off tools, small scripts, or experimenting with new ideas, [VSCode][vscode] with GitHub Copilot (GPT-4.1) can get you as far as [Cursor][cursor], at half the price.
 Both tools use the same model under the hood. So why are we paying more for Cursor?
 
 ![always-has-been-meme][always-has-been]
@@ -24,7 +24,7 @@ To test this, I gave both editors the same task, starting from an empty project 
 Prompt given to both VSCode and Cursor using GPT-4.1, clean installations, no custom configurations or rules:
 
 ```txt title="Prompt"
-Build a python tool to extract calendar events from a google calendar feed, use the start time to classify each event as “breakfast”, “lunch” or “dinner”
+Build a python tool to extract calendar events from a google calendar feed, use the start time to classify each event as "breakfast", "lunch" or "dinner"
 
 important facts:
 
@@ -38,9 +38,9 @@ important facts:
 
 {
     <day of week index> : {
-        “breakfast”: <breakfast event title>,
-        “lunch”: <lunch event title>,
-        “dinner”: <dinner event title>,
+        "breakfast": <breakfast event title>,
+        "lunch": <lunch event title>,
+        "dinner": <dinner event title>,
     }
 }
 ```
@@ -49,22 +49,22 @@ important facts:
 
 - Wrote the script directly into a file.
 - Prompted me to install missing packages automatically.
-- Didn’t mention a `.env` file until asked.
+- Didn't mention a `.env` file until asked.
   - After clarification, nailed the `.env` setup and gave precise steps to use dotenv.
 
 ### Cursor
 
 - Gave a detailed plan before coding.
 - Listed out the required libraries.
-- Wrote the script in the chat, not in a file, required me to chat “yes” to write the file.
-- Suggested usage steps, but didn’t offer automatic actions.
+- Wrote the script in the chat, not in a file, required me to chat "yes" to write the file.
+- Suggested usage steps, but didn't offer automatic actions.
 - Needed a follow-up prompt to handle `.env` file storage.
 
 ---
 
 ## Round 2: Virtual Environment + .env Support
 
-When I prompted both editors to “create a virtual environment to store the calendar feed variable,” neither assumed I meant .env style secrets. Fair enough, I followed up with:
+When I prompted both editors to "create a virtual environment to store the calendar feed variable," neither assumed I meant .env style secrets. Fair enough, I followed up with:
 
 ```txt title="Prompt"
 Use a `.env` file to store the environment variables instead.
@@ -115,7 +115,7 @@ Both editors delivered perfectly.
 
 Once I started testing real calendar feeds, I noticed this bug:
 
-> Breakfast was mapped to “lunch”, lunch to “dinner”, and dinner wasn’t showing up at all.
+> Breakfast was mapped to "lunch", lunch to "dinner", and dinner wasn't showing up at all.
 
 The root cause? Google Calendar feeds (.ics) are in UTC, while my meal times were defined in PST.
 
@@ -143,11 +143,13 @@ But overall, the core logic and structure were the same.
 
 When comparing VSCode with Copilot to Cursor, the differences come down more to style than substance, especially for quick tasks like this one.
 
-> Check out the [VSCode version][repo-vscode] and the [Cursor version][repo-cursor] on GitHub.
+<GitHubCard repo="samgutentag/meal-plan-vscode" description="VS Code extension for generating weekly meal plans" language="TypeScript" />
 
-VSCode’s chat lives neatly in the sidebar, making it easy to review your prompt history. It offers big, clear “do the thing” buttons and takes action directly in your files, which makes it feel snappy and task-focused.
+<GitHubCard repo="samgutentag/meal-plan-cursor" description="Cursor-built version of the meal plan generator for comparison" language="TypeScript" />
 
-Cursor, on the other hand, leans more tutorial-like. It’s verbose, tends to explain its reasoning, and interacts through conversational suggestions rather than buttons. This makes Cursor great for learning or pairing with an AI assistant, but when it comes to just getting the job done, both tools ultimately produce the same results.
+VSCode's chat lives neatly in the sidebar, making it easy to review your prompt history. It offers big, clear "do the thing" buttons and takes action directly in your files, which makes it feel snappy and task-focused.
+
+Cursor, on the other hand, leans more tutorial-like. It's verbose, tends to explain its reasoning, and interacts through conversational suggestions rather than buttons. This makes Cursor great for learning or pairing with an AI assistant, but when it comes to just getting the job done, both tools ultimately produce the same results.
 
 ## Take Away
 
@@ -155,7 +157,7 @@ I built this entire script, from zero to a working meal.json generator, in rough
 
 So let me ask again: **Why are we paying for Cursor?**
 
-If you’re already deep in the Cursor workflow, awesome. But if you’re working on quick tasks or scripts, VSCode with Copilot gets you there just the same and you might already be paying for it via GitHub.
+If you're already deep in the Cursor workflow, awesome. But if you're working on quick tasks or scripts, VSCode with Copilot gets you there just the same and you might already be paying for it via GitHub.
 
 [vscode]: https://code.visualstudio.com/
 [cursor]: https://cursor.com/

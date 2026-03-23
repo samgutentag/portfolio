@@ -1,0 +1,83 @@
+---
+title: "🧩 Building a Component Library for My Blog"
+summary: "Adding TerminalBlock, Callout, StepList, TIL, PartsList, and GitHubCard components to my MDX blog — and retrofitting 30 existing posts to use them."
+publishedAt: "2026-03-23"
+tags: ["react", "mdx", "next.js", "portfolio"]
+unpublished: true
+---
+
+I've been writing blog posts in MDX for a while, but they were really just markdown with a `.mdx` extension. Code blocks got the Carbon-style terminal chrome via CSS, blockquotes were blockquotes, and any time I wanted to call something out as a warning or a tip, I'd bold it and hope for the best.
+
+The thing that finally pushed me to build proper components was looking at my older hardware posts — the Helium hotspot setup guides have safety warnings buried in blockquotes that look identical to casual asides. A "don't power on without the antenna connected" warning should not have the same visual weight as a note about energy costs.
+
+## The Architecture Problem
+
+Here's the thing I didn't realize until I started: my blog had no MDX component support at all. The pipeline was `unified` → `remark` → `rehype` → HTML string → `dangerouslySetInnerHTML`. Writing `<Callout variant="warning">` in a post would just get stripped as unknown HTML.
+
+So step zero was migrating to `next-mdx-remote/rsc`, which compiles MDX server-side and renders actual React elements. Same remark/rehype plugins (remark-gfm, rehype-pretty-code with Shiki dual themes), but now the output is a React tree instead of an HTML string. Custom components just work.
+
+The migration itself was straightforward — `getPost()` returns raw MDX source instead of rendered HTML, the page component wraps it in `<MDXRemote>` with a components map — but it surfaced every piece of non-JSX HTML in 37 blog posts. HTML comments, Jekyll `{% highlight %}` tags from posts I'd migrated from an older blog, smart quotes, `style="..."` attributes. All of that needed to be valid JSX now.
+
+## The RSC Boundary Gotcha
+
+The first version of TerminalBlock was a Client Component (it needs `useState` for the copy button). Seemed reasonable. Except `next-mdx-remote/rsc` compiles MDX on the server, and when you pass children across the Server → Client Component boundary, JSX expressions like `{`template literals`}` just... vanish. `children` shows up as `undefined`.
+
+The fix was splitting the component: TerminalBlock itself is a Server Component that handles layout and text extraction, and CopyButton is a tiny Client Component that owns the clipboard state. Plain text children pass through the RSC boundary fine — MDX wraps them in `<p>` tags, and a recursive `extractText` function pulls the raw string back out.
+
+This also means TerminalBlock content in MDX posts is just plain text between the tags, not wrapped in template literals. Simpler to write, simpler to debug.
+
+## The Components
+
+Six components, each solving a specific "I keep doing this with plain markdown and it looks bad" problem:
+
+**TerminalBlock** — Dark terminal chrome with a copy button and auto `$` prompts for shell languages. Server Component with a Client Component CopyButton extracted for the clipboard interaction. The existing CSS-based terminal chrome still works for regular fenced code blocks; TerminalBlock is for when you want explicit control over the presentation.
+
+**Callout** — Five variants: note, warning, tip, gotcha, and future-me. Each gets a colored left border, tinted background, and icon. The `future-me` variant exists because I write a lot of "hey, if this breaks in six months..." notes to myself and those deserve their own look.
+
+**StepList / Step** — Auto-numbered timeline with accent-colored circles and a connecting vertical line. Useful for compact procedural sequences. I ended up *not* retrofitting existing step-by-step posts because most of them use H2/H3 headings with images and tables inside each step — too much structure to cram into a `<Step>` component without breaking the reading flow.
+
+**TIL** — A compact "today I learned" badge. Accent-colored label on the left, lesson text beside it. Designed to be a sticky note in the margin of a post, not a section.
+
+**PartsList** — For hardware posts. Qty, name (optionally linked), and notes in alternating rows. Replaces the inline lists I was writing for things like "here's what's in the outdoor enclosure kit."
+
+**GitHubCard** — Static display card with the GitHub icon, repo name as a link, description, and optional language/star badges. Static because I don't want to hit the GitHub API at build time across 13 posts.
+
+## The Retrofit
+
+Audited all 37 posts, identified every place a component would be a meaningful improvement, then made the edits. 58 component insertions across 30 files. The breakdown:
+
+| Component | Insertions | Posts touched |
+|-----------|-----------|--------------|
+| TerminalBlock | ~20 | 10 |
+| Callout | ~18 | 14 |
+| GitHubCard | 13 | 12 |
+| TIL | 15 | 15 |
+| PartsList | 3 | 2 |
+| StepList | 0 | 0 |
+
+StepList got zero retrofits — not because it's useless, but because existing step-by-step posts are structured with full H2 sections containing images and tables. StepList is better suited for new posts with compact procedural sequences.
+
+## MDX Compatibility Fixes
+
+Switching from a markdown-to-HTML pipeline to actual MDX compilation is stricter about what's valid. Fixes across the blog:
+
+- **7 files** — HTML comments `<!-- -->` → JSX comments `{/* */}`
+- **2 files** — Jekyll `{% highlight bash %}` → fenced code blocks (leftovers from a blog migration years ago)
+- **2 files** — HTML `style="..."` → JSX `style={{...}}`
+- **2 files** — Smart/curly quotes → straight quotes (copy-paste artifacts)
+
+## What I Skipped
+
+A few audit items that didn't make sense to convert:
+
+- **Travel charger PartsList** — the existing markdown tables have columns that don't map to PartsList's qty/name/note structure
+- **Room temperature sensor inventory** — woven into explanatory prose, not a standalone list
+- **Coffee week bash block** — it's a URL example, not a terminal command
+
+## What's Next
+
+There's a visual test page at `/dev/blog-components` that renders every component and variant as a direct React page — no MDX parsing in the loop, so it's a reliable reference for what each component looks like.
+
+The components themselves are intentionally simple — no animation, no interactivity beyond the copy button, no dark mode variants that fight with the existing theme. They inherit from the site's CSS variables and should just work as the design evolves.
+
+I'll probably add an `Aside` or `Footnote` component eventually, and there's a case for a `BeforeAfter` image comparison component for the hardware posts. But the current six cover the patterns I actually use.

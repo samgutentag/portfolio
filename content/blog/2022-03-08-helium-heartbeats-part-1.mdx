@@ -43,7 +43,7 @@ potential issue I can investigate and monitor.
 | :---------------------------: | :-------------------------------------------: |
 | ![sample image][sample-image] | ![sample warning image][sample-image-warning] |
 
-> these are not my actual hotspots, they are associated to a wallet I selected at random.
+<Callout variant="note">these are not my actual hotspots, they are associated to a wallet I selected at random.</Callout>
 
 ---
 
@@ -54,8 +54,7 @@ records the Heartbeat for every Hotspot in my Wallet every 3 minutes via a `cron
 generated at the top of every hour, and the message is sent to Pushover every 8 hours or if a
 Hotspots Status has changed.
 
-> A change in status is when a Hotspot has been innactive for more than a specified number of
-> Blocks, I use `450` for my "inactive" status.
+<Callout variant="note">A change in status is when a Hotspot has been innactive for more than a specified number of Blocks, I use `450` for my "inactive" status.</Callout>
 
 Here is an example `heartbeat.json` file that is saved by this script, it is lightweight, but that
 keeps storage low and later steps fast and human readable.
@@ -106,7 +105,9 @@ The structure of a `heartbeat.json` entry is detailed here:
 ## Next Steps
 
 Checkout the other posts in this series where I will cover in more detail how I get this data from
-the Helium API and checkout the code on my [Github][github-repo]
+the Helium API.
+
+<GitHubCard repo="samgutentag/helium-heartbeat" description="Monitor Helium hotspot activity and get push notifications on status changes" language="Python" />
 
 - [Monitor Helium Hotspot Activity Part 1, Overview][helim-heartbeat-part-1] (you are here)
 - [Monitor Helium Hotspot Activity Part 2, Using the Helium API][helim-heartbeat-part-2]

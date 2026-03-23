@@ -11,14 +11,16 @@
  *
  * 3. params is a Promise in Next.js 15+ App Router. Always `await` it.
  *
- * 4. dangerouslySetInnerHTML renders the pre-built HTML string from our
- *    unified pipeline. It's "dangerous" in the sense that you're trusting
- *    the HTML source — safe here because we control all the .mdx files.
+ * 4. MDXRemote compiles MDX source on the server and renders it as React
+ *    elements, allowing custom components (TerminalBlock, Callout, etc.)
+ *    to be used directly in .mdx files.
  */
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPost, getBlogPosts } from "@/data/blog";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import { getPost, getBlogPosts, mdxOptions } from "@/data/blog";
+import { mdxComponents } from "@/components/mdx";
 
 export async function generateStaticParams() {
   const posts = await getBlogPosts();
@@ -106,10 +108,13 @@ export default async function BlogPostPage({
        * `dark:prose-invert` flips prose colors in dark mode.
        * `max-w-none` removes the default max-width so it fills our 2xl container.
        */}
-      <div
-        className="mt-10 prose prose-sm dark:prose-invert max-w-none"
-        dangerouslySetInnerHTML={{ __html: post.source }}
-      />
+      <div className="mt-10 prose prose-sm dark:prose-invert max-w-none">
+        <MDXRemote
+          source={post.source}
+          components={mdxComponents}
+          options={{ mdxOptions }}
+        />
+      </div>
     </article>
   );
 }

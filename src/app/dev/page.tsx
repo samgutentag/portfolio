@@ -44,11 +44,27 @@ const projects: Project[] = [
     color: "#0071e3",
     blogSlug: "2026-02-17-the-latest-travel-charger-audit",
   },
+  {
+    slug: "blog-components",
+    title: "Custom Blog Components",
+    description:
+      "MDX component library — TerminalBlock, Callout, StepList, TIL, PartsList, GitHubCard.",
+    emoji: "🧩",
+    color: "#d97706",
+    blogSlug: "2026-03-23-mdx-components-for-the-blog",
+  },
 ];
 
 export default async function DevIndexPage() {
   const posts = await getBlogPosts();
   const publishedSlugs = new Set(posts.map((p) => p.slug));
+
+  // Sort newest-first by blog post date when available, undated projects last
+  const sorted = [...projects].sort((a, b) => {
+    const dateA = a.blogSlug?.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? ''
+    const dateB = b.blogSlug?.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? ''
+    return dateB.localeCompare(dateA)
+  })
 
   return (
     <div className="pt-4">
@@ -59,7 +75,7 @@ export default async function DevIndexPage() {
       </p>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        {projects.map((project) => (
+        {sorted.map((project) => (
           <div key={project.slug} className="flex flex-col">
             {/* Preview area */}
             <Link href={`/dev/${project.slug}`} className="group no-underline">

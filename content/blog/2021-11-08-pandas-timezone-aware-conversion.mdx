@@ -30,4 +30,6 @@ df.set_index("datetime", inplace=True)
 
 ```
 
+<TIL>To convert timezone-aware strings in pandas, use `pd.to_datetime(col, utc=True)` or parse with `dateutil` to preserve timezone info.</TIL>
+
 [xkcd-1883]: https://xkcd.com/1883/

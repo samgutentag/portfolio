@@ -1,0 +1,70 @@
+---
+title: "Same Map, Different Bean"
+publishedAt: "2026-03-20"
+summary: "Forking the Burger Week map for Coffee Week — what worked, what didn't, and what got backported."
+tags: ["javascript", "leaflet", "cloudflare-workers", "cloudflare-analytics", "claude-code", "side-project"]
+unpublished: true
+---
+
+The [Burger Week map](https://sbburgerweekmap.com) worked well enough that when Coffee Week got announced, the first thought was "can I just fork it and swap the data?" Turns out: mostly yes.
+
+Santa Barbara Coffee Week runs March 19–28, 14 participating spots across 26 locations. Different vibe than burgers — cafes with morning hours, cocktail bars with evening-only availability, food pairings at bakeries. Same geography though, so the map bones all carry over.
+
+## Config-Driven Pays Off
+
+The whole point of building `config.js` and `apply-theme.py` during Burger Week was exactly this scenario. Change the event name, dates, emoji, tip tiers, and URLs in one file, run one Python script, and 10 files update automatically — HTML titles, favicons, OG images, CNAME, README, Worker SQL timestamps, workflow dates.
+
+The only actual code change was swapping three lines in a `tagDefs` array. Burger Week had dietary filters (vegetarian, gluten-free, fries). Coffee Week needed category filters: Just Coffee, Coffee + Food, Cocktails. Since the filter system reads from that array dynamically, everything else — popups, sidebar badges, print view — just worked.
+
+## The Stuff That Wasn't Config-Driven (But Should Have Been)
+
+A few things were hardcoded that I only discovered when they showed up wrong in the fork:
+
+- **"Buy me a burger!"** on the print page — should have been reading `THEME.venmoNote`
+- **"Feb 19"** in the stats footer — hardcoded date instead of reading `THEME.eventStartDate`
+- **`tracking-snapshot.js`** — the burger week stats snapshot carried over and the stats page loaded it as a fallback, showing old data
+- **Analytics Engine dataset name** — `apply-theme.py` updates SQL timestamps but not the `FROM sbburgerweek` in the queries (6 occurrences in the Worker, 2 in the workflow)
+
+All fixed now, and backported to the burger week repo for next year.
+
+<TIL>The real test of "config-driven" is actually forking the project. Hardcoded values only surface when they show up wrong in someone else's instance.</TIL>
+
+### Round Two: Even More Hardcoded Stuff
+
+A few days in, noticed the stats dashboard filter usage section was showing zeros across the board. The tracking data was fine — the Worker stores whatever label the map sends, and the map was sending correct coffee week labels like `coffeeWithFood` and `Downtown`. The problem was `stats.js` had a hardcoded `filterLabels` object still looking for `"Isla Vista"`, `"vegetarian"`, and `"hasFries"`. Any tracked key not in that object got silently dropped.
+
+The fix was making filter definitions config-driven. Added `tagFilters` and `hoursFilters` arrays to `THEME` in `config.js`, then had `app.js`, `embed.js`, and `stats.js` all read from there instead of maintaining their own copies. The stats page builds its label map dynamically from `AREA_COLORS` (already loaded from the data file) plus the new THEME arrays.
+
+While I was in there, found more `apply-theme.py` gaps — the search placeholder still said "Search restaurants or burgers…", the embed's about modal had burger week dates and source URLs, the admin page had never been themed at all, and the Venmo description still said "Buy me a burger" in two places. The Trunk linter reformatting HTML to multi-line attributes had also silently broken one of the source-link regex replacements. Added `re.DOTALL` and loosened the attribute-order matching to handle it.
+
+## New Tricks
+
+Built a `fetch-details.py` script that pulls website URLs and phone numbers from the Google Places API. Same pattern as the existing `fetch-hours.py` — reads `place-ids.json`, calls the API, updates both data files in place. Only overwrites `null` values so manually-entered data is preserved. Saved a lot of tedious copy-pasting from Google Maps.
+
+Also discovered that long-form Google Maps search URLs work fine as `mapUrl` values:
+
+```bash title="Quick and dirty mapUrl format"
+https://www.google.com/maps/search/?api=1&query=Business+Name+123+Main+St+City+CA
+```
+
+The `fetch-place-ids.py` script resolves these to Place IDs correctly, and the directions buttons handle them. Good enough to get the map populated fast — can swap in proper short links later.
+
+## Analytics: Two Layers
+
+The map has two separate analytics systems, both through Cloudflare:
+
+1. **Analytics Engine** — custom event tracking via a Worker. Every restaurant click, directions tap, and tip jar interaction fires a `window.track()` call that hits the Worker, which writes to Cloudflare's Analytics Engine. This powers the `/stats` page with real engagement data.
+
+2. **Cloudflare Web Analytics** — the standard page-view beacon. Cookieless, privacy-friendly, gives you traffic volume, referrers, device breakdown. Just a `<script>` tag with a token.
+
+The Worker was already running from launch day, but I forgot to set the Web Analytics token in `config.js`. Two days of page view data, gone. The wiring was all there — `apply-theme.py` injects or removes the beacon script based on whether `cfAnalyticsToken` is null — I just hadn't grabbed the token from the Cloudflare dashboard yet. One config change and a `python3 apply-theme.py` later, it's live.
+
+## What's Left
+
+- SVG filter icons are placeholder-ish (pulled from [svgrepo.com](https://www.svgrepo.com), could be better)
+- Apple Maps links are manually collected — no API for those
+- Some coordinates are estimated from addresses rather than exact pin drops
+- The `apply-theme.py` dataset name replacement should probably be automated (item 6 in the backport notes)
+- Embed CSS class names still say `burger-icon-wrapper` etc. — cosmetic, doesn't affect users, but mildly confusing when reading the code
+
+The map is live at [sbcoffeeweekmap.com](https://sbcoffeeweekmap.com). Event runs through March 28.

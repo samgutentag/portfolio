@@ -1,0 +1,65 @@
+---
+title: "Building an Agent Skill From a Research Paper"
+publishedAt: "2026-03-19"
+summary: "We turned a 76-paper academic survey on flaky tests into a coding agent skill that actually catches them."
+tags: ["agent-skills", "flaky-tests", "claude-code", "trunk", "open-source"]
+unpublished: true
+---
+
+Flaky tests are one of those problems where everybody knows they're bad, most teams have a handful ruining their CI, and nobody has time to go hunt them down systematically. We tried building agent skills to detect and quarantine flaky tests automatically. It didn't work. Here's what did.
+
+## The First Attempt (And Why It Failed)
+
+We shipped three skills: `write-tests` (best practices for writing reliable tests), `detect-flakiness` (figure out if a failure is real or flaky), and `quarantine` (stop a flaky test from blocking merges). The idea was a full lifecycle — write good tests, catch the flaky ones, quarantine what you can't fix immediately.
+
+In practice, `detect-flakiness` sent the agent into a 30-minute loop investigating tests that weren't even flaky. It kept suggesting manual steps — copy this command, run that, check this output — which defeats the point of having an agent do it. `quarantine` depended on detection working, so it never got a fair shot.
+
+But `write-tests` did something unexpected. When pointed at an existing test file and asked to review it, the agent caught real problems: flaky CSS selectors in E2E tests, poorly handled async API calls, the kind of stuff that causes those "works on my machine" CI failures. It wasn't writing tests — it was reviewing them for flakiness patterns. That was the real skill.
+
+## Grounding It in Research
+
+There's a paper called ["A Survey of Flaky Tests"](https://dl.acm.org/doi/10.1145/3476105) (Parry et al., ACM TOSEM 2021) that reviewed 76 papers on test flakiness and produced a taxonomy of 15 root cause categories. Things like async wait, randomness, floating point comparison, unordered collections, network dependencies, resource leaks — each one with data on how frequently it causes flakiness in the wild.
+
+Async wait alone accounts for 22–78% of flaky tests depending on the study. That's the `sleep(2000)` instead of `waitForElement()` pattern. Concurrency is next at 3–26%, then platform dependency at up to 34%.
+
+Not all 15 categories are detectable by reading code. Concurrency race conditions need runtime analysis. Test order dependency requires actually running tests in different orders. Platform dependency only shows up across environments. But 8 of the 15 categories leave clear fingerprints in the source:
+
+{/* TODO: consider making this a proper table instead of a list */}
+
+- **Async Wait** — `sleep()` instead of explicit waits, missing `await`
+- **Randomness** — unseeded `Math.random()` in test assertions
+- **Floating Point** — exact equality on float results
+- **Unordered Collections** — order assertions on sets and dicts
+- **Time** — `Date.now()` in assertions, timezone-sensitive comparisons
+- **Network** — unmocked HTTP calls in unit tests
+- **Resource Leak** — opened files/connections without cleanup
+- **Too Restrictive Range** — hardcoded timing thresholds that vary by machine
+
+## The Skill
+
+The rebuilt skill (`review-for-flakiness`) supports two modes. Point it at a file and it reviews that file. Ask it to scan your test suite and it discovers test files across the repo and checks them all. Every finding includes the file, line, the specific pattern, why it causes flakiness, and a concrete fix using whatever test framework the project actually uses (Jest, pytest, Go's `testing` package).
+
+The key design decision: only flag what you can reliably detect from code. The original `detect-flakiness` skill tried to do everything and ended up doing nothing useful. This one does 8 things well and is honest about the 7 it can't do yet.
+
+<TIL>When building code analysis tools, doing 8 things with high confidence beats doing 15 things with spotty accuracy. Only flag what you can reliably detect.</TIL>
+
+<TerminalBlock language="bash" title="install the skill">
+# Install it
+npx skills add trunk-io/trunk-skills
+
+# Or manually
+git clone https://github.com/trunk-io/trunk-skills.git /tmp/trunk-skills
+cp -r /tmp/trunk-skills/skills/review-for-flakiness ~/.claude/skills/review-for-flakiness
+</TerminalBlock>
+
+## What's Next
+
+{/* TODO: link to the repo README once it's public-facing */}
+
+The skill needs dogfooding across more codebases — different languages, different test frameworks, different scales. The 7 planned categories (concurrency, test order dependency, platform dependency, I/O, timeouts) are the harder problems, and I'm not sure static analysis is ever the right tool for some of them.
+
+There's also a blog post in the works specifically about the research — the paper's taxonomy is genuinely useful even without the skill, and most developers haven't seen it broken down this way.
+
+<GitHubCard repo="trunk-io/trunk-skills" description="Community-maintained skill library for Claude Code" language="TypeScript" />
+
+The README has the full 15-category table with what's active and what's planned.

@@ -93,24 +93,26 @@ Every event includes the restaurant name. That's it. No user IDs, no session tra
 
 ## The CORS Rabbit Hole
 
-Testing locally surfaced a fun one. `sendBeacon` with a JSON string silently failed cross-origin. No error in the console, no failed request in the network tab, just nothing. The beacon vanished into the void.
+<Callout variant="gotcha">Testing locally surfaced a fun one. `sendBeacon` with a JSON string silently failed cross-origin. No error in the console, no failed request in the network tab, just nothing. The beacon vanished into the void.
 
 The fix was two things. First, `sendBeacon` sends with credentials mode `include` when you pass a Blob, which means the CORS response can't use `Access-Control-Allow-Origin: *`. The worker has to echo back the actual request origin. Second, the payload needs to be a `Blob` with an explicit `application/json` content type, not a plain string. A plain `JSON.stringify()` string sends as `text/plain` and the worker's `request.json()` doesn't parse it.
 
-Neither of these errors are visible. The beacon fires, returns `true`, and the request just doesn't arrive. It took `curl` (which worked fine) and `fetch` (which showed the CORS error) to triangulate what `sendBeacon` was silently swallowing.
+Neither of these errors are visible. The beacon fires, returns `true`, and the request just doesn't arrive. It took `curl` (which worked fine) and `fetch` (which showed the CORS error) to triangulate what `sendBeacon` was silently swallowing.</Callout>
+
+<TIL>`sendBeacon` silently fails cross-origin if you set the wrong content type. No console error, no network tab trace. Use `fetch` with `keepalive: true` instead.</TIL>
 
 ## Querying the Data
 
 Analytics Engine exposes a SQL API. After the event, I can pull everything with:
 
-```bash
-curl -s "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/analytics_engine/sql" \
-  -H "Authorization: Bearer $API_TOKEN" \
+<TerminalBlock language="bash" title="query analytics engine">
+curl -s "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/analytics_engine/sql" \\
+  -H "Authorization: Bearer $API_TOKEN" \\
   -d "SELECT blob2 AS restaurant, blob1 AS action, count() AS clicks
       FROM sbburgerweek
       GROUP BY restaurant, action
       ORDER BY clicks DESC"
-```
+</TerminalBlock>
 
 Which restaurant got the most views? Which one sent the most people to Apple Maps? Is there a restaurant everyone looks at but nobody gets directions to? Those questions have answers now.
 
@@ -130,6 +132,8 @@ It's a better interaction model: the selection controls are on the map where you
 
 Burger Week starts in two days. The app handles incomplete data gracefully, deep links let people share specific restaurants, and now I'll actually know which burgers people are most excited about.
 
-The map is live at [sbburgerweekmap.com](https://sbburgerweekmap.com). Code on [GitHub](https://github.com/samgutentag/sbburgerweek).
+The map is live at [sbburgerweekmap.com](https://sbburgerweekmap.com).
+
+<GitHubCard repo="samgutentag/sbburgerweek" description="Santa Barbara Burger Week voting app — Claude-built, fork-ready" language="TypeScript" />
 
 _Santa Barbara Burger Week 2026 runs February 19-25. All burgers are $10. No affiliation, just hungry._

@@ -1,0 +1,142 @@
+---
+title: "🧩 MDX Component Examples"
+summary: "Visual test page showing every custom MDX component and variant."
+publishedAt: "2099-01-01"
+draft: true
+tags: ["meta"]
+---
+
+This page demonstrates every custom MDX component available in blog posts. It exists for visual testing — `draft: true` keeps it out of the blog listing.
+
+## TerminalBlock
+
+Basic bash commands with auto-prompt:
+
+<TerminalBlock>
+npm install
+cd my-project
+npm run dev
+</TerminalBlock>
+
+With a custom title:
+
+<TerminalBlock language="bash" title="install dependencies">
+npm install next react react-dom
+npm install -D tailwindcss typescript
+</TerminalBlock>
+
+Non-shell language (no prompt prefix):
+
+<TerminalBlock language="sql" showPrompt="false">
+SELECT name, email FROM users WHERE active = true ORDER BY created_at DESC;
+</TerminalBlock>
+
+Shell with prompt explicitly disabled:
+
+<TerminalBlock language="bash" showPrompt="false">
+# output from a command, not something you'd type
+total 48
+drwxr-xr-x  12 sam  staff   384 Mar 23 10:00 .
+-rw-r--r--   1 sam  staff  1024 Mar 23 09:58 package.json
+</TerminalBlock>
+
+## Callout
+
+<Callout variant="note">
+This is a standard note. Use it for supplementary information that's worth calling out but isn't critical.
+</Callout>
+
+<Callout variant="warning">
+This is a warning. Something could go wrong if the reader isn't careful here.
+</Callout>
+
+<Callout variant="tip">
+This is a tip. A helpful shortcut or best practice the reader might not know about.
+</Callout>
+
+<Callout variant="gotcha">
+This is a gotcha. Something that looks right but will bite you — the API returns 200 even on auth failures.
+</Callout>
+
+<Callout variant="future-me">
+If this breaks, the token expires every 90 days. Check the `.env` file first.
+</Callout>
+
+With a custom title:
+
+<Callout variant="gotcha" title="This one got me">
+The `sendBeacon` API silently fails cross-origin if you set the wrong content type. No console error, no network tab trace.
+</Callout>
+
+## StepList
+
+<StepList>
+  <Step title="Clone the repo">
+    Run `git clone` and navigate into the directory.
+  </Step>
+  <Step title="Install dependencies">
+    <TerminalBlock>
+npm install
+</TerminalBlock>
+  </Step>
+  <Step title="Configure your environment">
+    Copy `.env.example` to `.env` and fill in your values. You'll need API keys for the weather service and a Cloudflare account.
+  </Step>
+  <Step title="Start the dev server">
+    <TerminalBlock>
+npm run dev
+</TerminalBlock>
+    Open `http://localhost:3000` to verify everything works.
+  </Step>
+</StepList>
+
+## TIL
+
+<TIL>
+`rsync` preserves file permissions by default but `scp` does not.
+</TIL>
+
+<TIL>
+The `sendBeacon` API silently fails cross-origin with the wrong content type — no console error, no network tab trace. Use `fetch` with `keepalive: true` instead.
+</TIL>
+
+## PartsList
+
+<PartsList items={[
+  { name: "Raspberry Pi 4 (4GB)", qty: 1, link: "https://raspberrypi.com" },
+  { name: "MicroSD card (32GB+)", qty: 1, note: "any brand works" },
+  { name: "USB-C power supply", qty: 1 },
+  { name: "Short ethernet cable", qty: 1, note: "or use WiFi" },
+  { name: "3D-printed case", qty: 1, link: "https://www.thingiverse.com", note: "optional" },
+]} />
+
+With a custom title:
+
+<PartsList title="Cables" items={[
+  { name: "USB-C to USB-C (100W)", qty: 2, note: "for laptop + battery bank" },
+  { name: "USB-C to Lightning", qty: 1, note: "AirPods" },
+  { name: "Apple Watch magnetic cable", qty: 1 },
+]} />
+
+## GitHubCard
+
+<GitHubCard
+  repo="samgutentag/portfolio"
+  description="Personal portfolio and blog built with Next.js and MDX"
+  language="TypeScript"
+  stars={12}
+/>
+
+With topics:
+
+<GitHubCard
+  repo="samgutentag/sbburgerweek"
+  description="Santa Barbara Burger Week voting app — Claude-built, fork-ready"
+  language="TypeScript"
+  stars={4}
+  topics={["next.js", "claude", "food"]}
+/>
+
+Minimal (just repo name):
+
+<GitHubCard repo="samgutentag/cloud-cover" />

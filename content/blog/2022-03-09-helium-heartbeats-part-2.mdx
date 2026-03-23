@@ -13,10 +13,9 @@ further and serve more users' needs!
 
 ## Source Code Github Repo
 
-You can find the code for this project on [github][github-repo], clone the repo to follow along and
-run the script yourself.
+<GitHubCard repo="samgutentag/helium-heartbeat" description="Monitor Helium hotspot activity and get push notifications on status changes" language="Python" />
 
-[github-repo]: https://github.com/samgutentag/helium-heartbeat
+Clone the repo to follow along and run the script yourself.
 
 ## Set Up your Development (Virtual) Environment
 
@@ -25,9 +24,9 @@ assuming you have `mkvirtualenv` installed you can run this command to get start
 
 [virtual-env-blog]: https://gutentag.co/3sVfKZW
 
-```bash
-> mkvirtualenv -p python3 helium-heartbeat
-```
+<TerminalBlock language="bash" title="create virtual environment">
+mkvirtualenv -p python3 helium-heartbeat
+</TerminalBlock>
 
 Your shell output should be similar to this:
 
@@ -43,44 +42,43 @@ not want published to the internet, but _do_ want available to your scripts.
 
 #### Edit the `/postactvate` file
 
-```bash
+<TerminalBlock language="bash" title="postactivate">
 #!/bin/zsh
 # This hook is sourced after this virtualenv is activated.
 # ~/$HOME/.virtualenvs/helium-heartbeat/bin/postactvate
 
 # sample address - this is not a real wallet address, just an example
 export WALLET_ADDR="95a73802f8434c51a2bec3c8789cac7aa32f63793b8a4374a64"
-```
+</TerminalBlock>
 
 #### Edit the `/predeactivate` file
 
-```bash
+<TerminalBlock language="bash" title="predeactivate">
 #!/bin/zsh
 # This hook is sourced before this virtualenv is deactivated.
 # ~/$HOME/.virtualenvs/helium-heartbeat/bin/predeactivate
 
 # unset the wallet address, otherwise it will persist in the shell
 unset WALLET_ADDR
-```
+</TerminalBlock>
 
 With your Virtual Environment ready to go, navigate to your project directory (where you cloned the
 source code) and start the virtualenv with the command
 
-```bash
+<TerminalBlock language="bash" title="activate virtual environment">
 workon helium-heartbeat
-```
+</TerminalBlock>
 
-> Quick Check! Run `> printenv | grep WALLET` to ensure your environment variables are set
-> correctly! Your Wallet Address will print to the console if everything is ready to go.
+<Callout variant="tip">Quick Check! Run `printenv | grep WALLET` to ensure your environment variables are set correctly! Your Wallet Address will print to the console if everything is ready to go.</Callout>
 
 ### Install the Requirements
 
 Once inside your script directory, be sure to install the requirements, I tried to keep it as
 lightweight as possible.
 
-```bash
-> pip install -r requirements.txt
-```
+<TerminalBlock language="bash" title="install requirements">
+pip install -r requirements.txt
+</TerminalBlock>
 
 ### Set the Headers
 

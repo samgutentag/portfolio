@@ -12,15 +12,17 @@ When using a `zsh` shell, you must escape wildcard characters.
 
 ## Good
 
-```bash
-> scp pi@123.45.67.89:/home/some/dir/\* ./data/
-```
+<TerminalBlock language="bash" title="correct — escaped wildcard">
+scp pi@123.45.67.89:/home/some/dir/\\* ./data/
+</TerminalBlock>
 
 ## Bad
 
-```bash
-> scp pi@123.45.67.89:/home/some/dir/* ./data/
-```
+<TerminalBlock language="bash" title="incorrect — unescaped wildcard">
+scp pi@123.45.67.89:/home/some/dir/* ./data/
+</TerminalBlock>
+
+<TIL>In `zsh`, you must escape wildcard characters in `scp` commands with a backslash — `scp host:/path/\*.txt .` — or the shell tries to glob locally.</TIL>
 
 ## Source
 

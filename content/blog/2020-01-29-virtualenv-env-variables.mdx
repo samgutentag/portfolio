@@ -11,13 +11,19 @@ specific environment.
 
 navigate to `$VIRTUAL_ENV/bin/postactivate`
 
-{% highlight bash %} export FIRST_NAME="Sam" export LAST_NAME="Gutentag" {% endhighlight %}
+<TerminalBlock language="bash" title="$VIRTUAL_ENV/bin/postactivate">
+export FIRST_NAME="Sam"
+export LAST_NAME="Gutentag"
+</TerminalBlock>
 
 ## Unset Variables
 
 navigate to `$VIRTUAL_ENV/bin/predeactivate`
 
-{% highlight bash %} unset FIRST_NAME unset LAST_NAME {% endhighlight %}
+<TerminalBlock language="bash" title="$VIRTUAL_ENV/bin/predeactivate">
+unset FIRST_NAME
+unset LAST_NAME
+</TerminalBlock>
 
 ## Verify Variables are being Set and Unset correctly
 
@@ -26,3 +32,5 @@ In this example, use the command `$ printenv | grep _NAME`
 - Before activating the virtualenv, it should return no results
 - After activating the virtualenv, it should return our variables
 - After deactivating the virtualenv, it should return no results
+
+<TIL>You can scope environment variables to a Python virtualenv using `postactivate` and `predeactivate` hook scripts.</TIL>

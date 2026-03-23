@@ -56,10 +56,8 @@ GET https://api.open-meteo.com/v1/forecast
 **The National Weather Service API** is completely free US government data with
 no rate limits. But it has quirks - more on that later.
 
-### Lesson: Start with the simplest integration
-
-Open-Meteo let me focus on building rather than fighting with auth and API
-keys. When you're learning, reducing friction at every step matters.
+<Callout variant="tip">**Start with the simplest integration.** Open-Meteo let me focus on building rather than fighting with auth and API
+keys. When you're learning, reducing friction at every step matters.</Callout>
 
 ## Phase 2: Weather API Integration
 
@@ -92,8 +90,8 @@ returns both side-by-side.
 The National Weather Service API taught me more through its quirks than
 Open-Meteo taught me through its simplicity.
 
-**Gotcha #1: Two-step grid lookup.** NWS doesn't accept lat/lon for weather
-data. You first convert coordinates to a grid point, then query that grid:
+<Callout variant="gotcha">**Two-step grid lookup.** NWS doesn't accept lat/lon for weather
+data. You first convert coordinates to a grid point, then query that grid:</Callout>
 
 ```
 GET /points/34.4147,-119.7800
@@ -105,15 +103,15 @@ GET /gridpoints/LOX/102,72
 
 I cache the grid result since it never changes for a given location.
 
-**Gotcha #2: Coordinate precision causes redirects.** Send too many decimal
+<Callout variant="gotcha">**Coordinate precision causes redirects.** Send too many decimal
 places and the NWS API returns a 301 redirect. httpx doesn't follow redirects
 by default (unlike the `requests` library), so I got a confusing error until I
-figured out I needed both `round(LATITUDE, 4)` and `follow_redirects=True`.
+figured out I needed both `round(LATITUDE, 4)` and `follow_redirects=True`.</Callout>
 
-**Gotcha #3: "Current" data isn't current.** The skyCover values come as
+<Callout variant="gotcha">**"Current" data isn't current.** The skyCover values come as
 time-windowed forecast periods like `2026-02-05T15:00:00+00:00/PT6H` (a 6-hour
 window starting at 15:00 UTC). I was naively taking `values[0]` - the first
-entry in the list - which was always the oldest, stale data.
+entry in the list - which was always the oldest, stale data.</Callout>
 
 The fix: parse each period's start time and duration, then find the one that
 contains "now":
@@ -130,11 +128,9 @@ def _find_current_value(values):
     return None
 ```
 
-### Lesson: Test against real APIs early
-
-Every one of these NWS gotchas would have been invisible in mocked tests. I
+<Callout variant="tip">**Test against real APIs early.** Every one of these NWS gotchas would have been invisible in mocked tests. I
 found them because I hit the real API during development. For a learning
-project, integration tests that use real endpoints catch real problems.
+project, integration tests that use real endpoints catch real problems.</Callout>
 
 ## Phase 3: Satellite Image Processing
 
@@ -186,8 +182,8 @@ With these endpoints, I could hit `/satellite/image/overlay` in a browser,
 see exactly where the box was landing, open the source image in an editor,
 and read off the correct pixel coordinates. Problem solved in one iteration.
 
-**Lesson: Build visual debug tools early.** For any CV project, the ability
-to see what the algorithm is "seeing" isn't a nice-to-have. It's essential.
+<Callout variant="tip">**Build visual debug tools early.** For any CV project, the ability
+to see what the algorithm is "seeing" isn't a nice-to-have. It's essential.</Callout>
 
 ### The Cloud Detection Algorithm
 
@@ -225,9 +221,9 @@ At threshold=80, our simple pixel counter matched the professional weather API
 within 3 percentage points - on a nighttime image! The default of 130 is better
 suited for daytime.
 
-**Lesson: Simple CV can be surprisingly accurate.** You don't need machine
+<Callout variant="tip">**Simple CV can be surprisingly accurate.** You don't need machine
 learning to get useful results. A brightness threshold gets you remarkably far
-for a "is it cloudy?" question.
+for a "is it cloudy?" question.</Callout>
 
 ## Phase 5: Combining Everything
 
@@ -352,5 +348,6 @@ ground truth.
 
 ---
 
-_Built with Python, FastAPI, and Claude Code. Source code on
-[GitHub](https://github.com/samgutentag/cloud-cover)._
+_Built with Python, FastAPI, and Claude Code._
+
+<GitHubCard repo="samgutentag/cloud-cover" description="Real-time cloud cover estimation using satellite imagery and weather APIs" language="Python" />

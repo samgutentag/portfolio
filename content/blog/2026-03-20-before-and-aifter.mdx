@@ -1,0 +1,77 @@
+---
+title: "before-and-aifter"
+publishedAt: "2026-03-20"
+summary: "A Chrome extension that draws a line on your GitHub contribution graph showing when you started using AI coding tools."
+tags: ["chrome-extension", "typescript", "github", "ai-tools", "vite"]
+unpublished: true
+---
+
+The GitHub contribution graph tells a story, but it's missing a chapter marker. Somewhere in that sea of green squares, most of us started pair programming with an AI — and the graph changed. I wanted to see exactly where that line was, literally.
+
+## The Idea
+
+**before-and-aifter** is a Chrome extension that overlays your GitHub contribution graph with a visual marker showing when you started using AI coding tools. The "AI" is baked right into the name (look closely at "aifter").
+
+The fun part: the marker line isn't just a boring vertical slice. It's *crooked* — if you started on a Wednesday, the line jogs to include only Wed–Sat of that first week. It follows the actual day, not just the week boundary.
+
+## What It Does (So Far)
+
+Three visual layers on top of the existing contribution graph:
+
+1. **A crooked dotted line** at your configured start date, with zone shading on the "aifter" side
+2. **Glossy blue squares** replacing the green fill on days where AI usage is detected in your commits — intensity still maps to contribution count, just in blue instead of green
+3. **Enhanced tooltips** on the blue squares showing which tool was detected and how (Co-Authored-By trailers, commit message patterns)
+
+It works on your own profile using dates you configure, and on other people's profiles by auto-detecting AI signals in their public commits.
+
+## The Detection Approach
+
+For MVP, detection is entirely client-side — no API token needed. The content script scrapes commit pages for known AI signatures:
+
+```typescript title="src/detector.ts"
+const KNOWN_AI_TOOLS: AIToolConfig[] = [
+  {
+    id: 'claude',
+    name: 'Claude Code',
+    coAuthorPatterns: ['claude', 'noreply@anthropic.com'],
+    messagePatterns: ['generated with claude code'],
+  },
+  {
+    id: 'copilot',
+    name: 'GitHub Copilot',
+    coAuthorPatterns: ['copilot', 'noreply@github.com'],
+    messagePatterns: [],
+  },
+  // ... cursor, codeium, aider
+]
+```
+
+The detector module has a clean interface (`detectAIUsage(username, dateRange)`) that today scrapes DOM but is designed to swap to the GitHub API later without touching the rendering code.
+
+{/* TODO: add a screenshot of the extension running on a real profile once it's tested */}
+
+## The Glossy Squares
+
+The blue squares aren't just recolored — they have a glossy glow effect built from SVG filters. A gaussian blur creates the outer halo, and a linear gradient overlay gives them a glassy look. Against the flat green "solo work" squares, they pop in a way that's immediately readable.
+
+The color defaults to pale blue (`#87b8f8`) but is configurable in the extension settings. The intensity scale maps to four levels, same as GitHub's green scale:
+
+- `#3b6a9e` (low activity)
+- `#4a7ab5`
+- `#6a9fd8`
+- `#87b8f8` (heavy activity)
+
+## What's Next
+
+<Callout variant="warning">The build passes but hasn't been loaded in Chrome yet. This is entirely untested on a real GitHub profile.</Callout>
+
+- Actually test this on a real GitHub profile
+- The commit-page scraping might be slow on profiles with lots of activity — may need to move detection to a background service worker with caching
+- GitHub API integration for deeper detection (PR labels, author metadata) — requires a PAT
+- Per-tool colored lines (Copilot blue, Claude orange, etc.)
+
+{/* TODO: update after first real test run */}
+
+## Stack
+
+TypeScript, Vite with [@crxjs/vite-plugin](https://crxjs.dev/vite-plugin), Chrome Extension Manifest V3. No framework for the options page — it's small enough to be vanilla HTML/TS.

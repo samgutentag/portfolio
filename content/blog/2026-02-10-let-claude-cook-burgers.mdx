@@ -16,7 +16,7 @@ I wanted a map and thought "I could build that!" In the past, this is where I'd 
   src="https://sbburgerweekmap.com/embed/map"
   width="100%"
   height="600"
-  style="border: none; border-radius: 8px;"
+  style={{border: 'none', borderRadius: '8px'}}
   title="SB Burger Week 2026 Interactive Map"
   loading="lazy"
   allowfullscreen
@@ -124,7 +124,7 @@ The whole thing is:
 
 It's really that simple, there is not React, no Tailwind, no buildpipeline, just a single html file. This keeps something so simple, so very much, well, simple. I can iterate with Claude quickly and jump in to make manual edits on the fly.
 
-> You can fork the repo, edit `data.js` with your restaurants, push to GitHub, and you're live.
+<Callout variant="tip">You can fork the repo, edit `data.js` with your restaurants, push to GitHub, and you're live.</Callout>
 
 That simplicity wasn't a constraint I ever explicitly set. Claude Code just reached for the simplest thing that works. When I wanted a burger emoji overlay on map markers, it didn't suggest swapping to a different mapping library. It created a `divIcon` overlay on top of the existing `circleMarker`.
 
@@ -149,8 +149,12 @@ My first prompt was barely a sentence. Thirty minutes later I had a live site. A
 
 The barrier isn't knowing how to code anymore. It's knowing whether the thing is worth the effort to start. And when starting costs almost nothing, subscription aside, I can quickly prototype things I'd never build before.
 
+<TIL>The real barrier to shipping side projects isn't technical skill — it's activation energy. AI tools collapse the distance between "I should build this" and "it's live."</TIL>
+
 ---
 
-The map is live at [https://sbburgerweekmap.com](https://sbburgerweekmap.com). The code is on [GitHub](https://github.com/samgutentag/sbburgerweek) - fork it and map your own burger week!
+The map is live at [https://sbburgerweekmap.com](https://sbburgerweekmap.com). Fork it and map your own burger week!
+
+<GitHubCard repo="samgutentag/sbburgerweek" description="Santa Barbara Burger Week voting app — Claude-built, fork-ready" language="TypeScript" />
 
 _Santa Barbara Burger Week 2026 runs February 19–25. All burgers are $10. No affiliation, just hungry._

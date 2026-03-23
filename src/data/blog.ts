@@ -1,31 +1,25 @@
 /**
- * Blog data layer — reads .mdx files from disk, parses frontmatter,
- * and converts markdown → HTML via a unified pipeline.
+ * Blog data layer — reads .mdx files from disk and parses frontmatter.
  *
  * All functions are async and run on the server (Node.js `fs`).
  * Next.js calls them at build time for static pages or at request time for dynamic ones.
  *
  * Pipeline:
  *   .mdx file  →  gray-matter (split frontmatter + content)
- *              →  unified / remark-parse (markdown AST)
- *              →  remark-rehype (markdown AST → HTML AST)
- *              →  rehype-pretty-code (syntax-highlighted code blocks via shiki)
- *              →  rehype-stringify (HTML AST → HTML string)
+ *              →  raw MDX source returned to the page component
+ *              →  next-mdx-remote/rsc compiles MDX with remark/rehype plugins
+ *              →  React elements rendered with custom MDX components
  */
 
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { unified } from "unified";
-import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
-import remarkRehype from "remark-rehype";
 import rehypePrettyCode from "rehype-pretty-code";
-import rehypeRaw from "rehype-raw";
-import rehypeStringify from "rehype-stringify";
 import { createHighlighter } from "shiki";
 import { visit } from "unist-util-visit";
 import type { Root, Element } from "hast";
+import type { PluggableList } from "unified";
 
 export type BlogPostMetadata = {
   title: string;
@@ -39,17 +33,12 @@ export type BlogPostMetadata = {
 export type BlogPost = {
   slug: string;
   metadata: BlogPostMetadata;
-  source: string; // rendered HTML
+  source: string; // raw MDX content (rendered by next-mdx-remote in the page)
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content", "blog");
 
-/**
- * Converts a raw markdown string into an HTML string.
- * rehype-pretty-code handles <pre>/<code> blocks with shiki themes;
- * keepBackground: false lets us style the background via CSS instead of inline styles.
- */
-/** Wraps <table> in a scrollable div so wide tables don’t break layout on small screens. */
+/** Wraps <table> in a scrollable div so wide tables don't break layout on small screens. */
 function rehypeWrapTables() {
   return (tree: Root) => {
     visit(tree, "element", (node, index, parent) => {
@@ -69,54 +58,49 @@ function rehypeWrapTables() {
 }
 
 /**
- * Converts a raw markdown string into an HTML string.
- * rehype-pretty-code handles <pre>/<code> blocks with shiki themes;
- * keepBackground: false lets us style the background via CSS instead of inline styles.
+ * MDX compilation options shared between the page renderer and any other
+ * consumer. Passed to next-mdx-remote's options.mdxOptions.
  */
-export async function markdownToHTML(markdown: string): Promise<string> {
-  const result = await unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypePrettyCode, {
-      theme: {
-        light: "min-light",
-        dark: "min-dark",
+export const mdxOptions = {
+  remarkPlugins: [remarkGfm] as PluggableList,
+  rehypePlugins: [
+    [
+      rehypePrettyCode,
+      {
+        theme: {
+          light: "min-light",
+          dark: "min-dark",
+        },
+        keepBackground: false,
+        getHighlighter: (options: Parameters<typeof createHighlighter>[0]) =>
+          createHighlighter({
+            ...options,
+            langAlias: { prompt: "shellscript" },
+          }),
       },
-      keepBackground: false,
-      getHighlighter: (options) =>
-        createHighlighter({
-          ...options,
-          langAlias: { prompt: "shellscript" },
-        }),
-    })
-    .use(rehypeRaw)
-    .use(rehypeWrapTables)
-    .use(rehypeStringify)
-    .process(markdown);
-
-  return result.toString();
-}
+    ],
+    rehypeWrapTables,
+  ] as PluggableList,
+};
 
 /**
  * Reads a single post by slug. Throws if the file doesn't exist.
  */
 export async function getPost(slug: string): Promise<BlogPost> {
   const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
-  const source = fs.readFileSync(filePath, "utf-8");
-  const { content, data } = matter(source);
-  const html = await markdownToHTML(content);
+  const raw = fs.readFileSync(filePath, "utf-8");
+  const { content, data } = matter(raw);
 
   return {
     slug,
     metadata: data as BlogPostMetadata,
-    source: html,
+    source: content,
   };
 }
 
 /**
  * Returns all published posts, sorted newest-first.
- * Posts with `unpublished: true` in their frontmatter are excluded.
+ * Posts with `draft: true` in their frontmatter are excluded.
  * Files without a `.mdx` extension (e.g. `.mdx.WIP`, templates) are also skipped.
  */
 export async function getBlogPosts(): Promise<BlogPost[]> {

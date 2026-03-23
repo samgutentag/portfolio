@@ -6,8 +6,9 @@ publishedAt: "2022-03-10"
 
 ## Visualizing The Heartbeat Data
 
-The final script in [this repo][github-repo] `helium_heartbeat_plots.py` is used to visualize the
-data the `helium_heartbeat.py` script is collecting.
+The final script `helium_heartbeat_plots.py` is used to visualize the data the `helium_heartbeat.py` script is collecting.
+
+<GitHubCard repo="samgutentag/helium-heartbeat" description="Monitor Helium hotspot activity and get push notifications on status changes" language="Python" />
 
 Also please note, this script handles a lot of edge cases, but not ALL of them, so please bear that
 in mind (and submit pull requests!)
@@ -22,8 +23,7 @@ plot the last specified `n` days. For effeciency, the script assumes that a day 
 Heartbeats (this assumes a 10 minute Heartbeat interval, calculated from
 `6 per hour * 24 hours = 144`) and will only load most recent `144` Heartbeat JSON files.
 
-> Make note of how frequently you are checking for Heartbeats and adjust the values here as needed,
-> a 10 minute interval is plenty of information.
+<Callout variant="note">Make note of how frequently you are checking for Heartbeats and adjust the values here as needed, a 10 minute interval is plenty of information.</Callout>
 
 ```markdown
 | param       | info                                           |
@@ -116,8 +116,7 @@ output image as a `.png` file.
 | `warning_threshold` | inactive block heights over this value are considered innactive |
 ```
 
-> This function is long, please see the file in the Github repo for all of the details, the snippet
-> code here is truncated for clarity
+<Callout variant="note">This function is long, please see the file in the Github repo for all of the details, the snippet code here is truncated for clarity.</Callout>
 
 ```python
 def plot_data(data=None, days_back=3, warning_threshold=450):

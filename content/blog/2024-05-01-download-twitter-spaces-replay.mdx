@@ -23,9 +23,9 @@ Fortunately, `yt-dlp` (formerly `youtube-dl`) and `ffmpeg` exist!
 On a Mac, `yt-dlp` and `ffmpeg` can be installed using [homebrew](https://brew.sh/) with the
 following command:
 
-```bash
+<TerminalBlock language="bash" title="install prerequisites">
 brew install ffmpeg yt-dlp
-```
+</TerminalBlock>
 
 ## Find the Recording URL
 
@@ -54,9 +54,9 @@ Paste in the spaces replay link from above into the address bar and hit enter.
 
 Watch the filtered content in the **Network** tab. You are looking for an entry similar to:
 
-```bash
+<TerminalBlock language="bash" title="example network entry">
 playlist_16732160847824420797.m3u8?type=replay
-```
+</TerminalBlock>
 
 The key element is the `type=replay` suffix.
 
@@ -71,15 +71,15 @@ Right click on this entry and select **Copy** > **Copy URL** from the menu.
 In a terminal window, navigate to the location you would like to store the recording. For me that is
 just the `Downloads` folder for now.
 
-```bash
+<TerminalBlock language="bash" title="navigate to downloads">
 cd ~/Downloads
-```
+</TerminalBlock>
 
 Use `yt-dpl` to download the spaces recording with this command:
 
-```bash
-yt-dpl [playlist_16732160847824420797.m3u8?type=replay](https://prod-fastly-us-east-1.video.pscp.tv/Transcoding/v1/hls/cxIaV_kOVKtVFbsr-rugYE7nlh8BEqogOW-AsQwgF4n5q7I9ve0B_DrmtotFaAEpYpmMJ7A3G8BTdBnNukeHJQ/non_transcode/us-east-1/periscope-replay-direct-prod-us-east-1-public/audio-space/playlist_16732160847824420797.m3u8\?type\=replay)
-```
+<TerminalBlock language="bash" title="download the recording">
+yt-dpl [playlist_16732160847824420797.m3u8?type=replay](https://prod-fastly-us-east-1.video.pscp.tv/Transcoding/v1/hls/cxIaV_kOVKtVFbsr-rugYE7nlh8BEqogOW-AsQwgF4n5q7I9ve0B_DrmtotFaAEpYpmMJ7A3G8BTdBnNukeHJQ/non_transcode/us-east-1/periscope-replay-direct-prod-us-east-1-public/audio-space/playlist_16732160847824420797.m3u8\\?type\\=replay)
+</TerminalBlock>
 
 ![terminal-download](https://raw.githubusercontent.com/samgutentag/img-host/main/download-spaces/terminal-download.png)
 

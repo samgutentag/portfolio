@@ -1,0 +1,72 @@
+---
+title: "What I Learned from Uber's 500+ Claude Code Skills"
+publishedAt: "2026-03-20"
+summary: "Uber has 500+ Claude Code skills across their org. I watched the Anthropic livestream, took notes, and pulled out the parts that matter."
+tags: ["claude-code", "skills", "devrel", "agentic-engineering"]
+unpublished: true
+---
+
+Anthropic did a livestream with Adam from Uber's AI Foundations team about how they use Claude Code skills internally. I watched it, transcribed it, and wrote up a report for my team. Here's the version for everyone else.
+
+## The Numbers
+
+Uber started with 2 skills in October 2025. By January they had 20. Now they have over 500 across the org, with about 200 in a curated "golden marketplace" that ships by default when any engineer launches Claude Code.
+
+That growth curve is wild, but the interesting part isn't the number. It's the infrastructure they're building around it now that they've hit scale.
+
+## Three Tiers of Distribution
+
+They run a layered model:
+
+1. **Golden marketplace** — curated, ships by default, no setup required. These are the skills Uber wants every engineer using for core dev workflows.
+2. **Team marketplaces** — domain-specific repos maintained by individual teams (mobile, backend, data science).
+3. **Personal repos** — experimental skills, personal automations, side projects.
+
+A CLI tool called `aifx` searches across all three tiers. Golden first, then SourceGraph MCPs to discover everything else. So you can find any of the 500+ skills from one place.
+
+## They Had Zero Telemetry Until This Week
+
+This is the part that got me. 500+ skills running across Uber, and until the week of this stream, they had no hard data on which ones people actually use. They were running on vibes and Slack chatter.
+
+Adam's exact words: "We don't want to operate purely on vibes."
+
+They're now rolling out usage metrics per skill, session capture (a skill that dumps your Claude session to storage with a shareable URL), feedback collection (thumbs up/down from users), and Slack signal monitoring to see which skills people organically talk about.
+
+## Bad Skills Are a Real Risk
+
+This one resonated.
+
+<Callout variant="warning">A poorly written skill doesn't throw an error. It silently degrades the whole agentic experience with paper cuts that are almost impossible to trace back to the source. You're debugging why Claude is acting weird and it turns out some skill in your marketplace is giving it bad instructions.</Callout>
+
+Their fix: a CI/CD pipeline for the golden marketplace with code review, owners, and LLM-as-judge evals. Define expected inputs and outputs, run an LLM judge, pass/fail before the skill gets blessed. The non-golden repos stay open for experimentation with no gates.
+
+Adam's framing on the right size for curated skills: "We probably don't want 500. It's probably on the order of 100-ish."
+
+## The Assembly Line Pattern
+
+One engineer at Uber (Abhishek Bhatia) built a skill that orchestrates the entire feature dev pipeline. Planning, sub-planning, implementation with PR size caps at 200-300 lines, TDD or spec-driven testing, fast code review, deep code review, security review, integration tests.
+
+The interesting part: when something breaks, he doesn't fix the code. He fixes the skill that produced the code. He's tuning the system, not the output.
+
+## Tribal Knowledge is the Killer Use Case
+
+Two senior DEs at Uber built a Go/Java performance optimization skill encoding years of expertise. Anyone can run it. It reports what it tried and what worked ("attempted 5 optimizations, 3 succeeded, 2 didn't apply") so you can trust the output without having their background.
+
+That's the template for high-value skills. Not clever automations. Not CLI wrappers. Senior expertise, written down in a form Claude can apply, with self-documenting results.
+
+<TIL>The killer use case for Claude Code skills isn't clever automation — it's encoding tribal knowledge that would otherwise live in someone's head or a forgotten wiki page.</TIL>
+
+## The Skill Workshop Pattern
+
+They have a skill that reads your current Claude session and proposes new skills you could extract from what you just did. That's their primary onboarding tool. Way more effective than showing people the skill.md format.
+
+The flow: do your normal work in Claude Code, run the skill workshop, see what it proposes, iterate. The epiphany comes from feeling it, not from reading a tutorial.
+
+{/* TODO: link to the Anthropic livestream when/if they post a permanent URL */}
+{/* TODO: consider adding a "what I'm stealing for my own setup" section */}
+
+## What's Next
+
+I wrote up a full internal report for my team and drafted a week of social media posts breaking this down into individual threads. The social content angle is interesting to me — there's a real gap for practitioner-level commentary on how teams actually use this stuff, versus the usual "look what I built" posts.
+
+If you're building skills for a team larger than just yourself, the distribution and telemetry problems are worth thinking about before you have 200 of them.

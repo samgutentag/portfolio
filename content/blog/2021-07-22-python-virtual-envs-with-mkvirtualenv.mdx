@@ -8,7 +8,9 @@ publishedAt: "2021-07-24"
 
 Let's say you wanted to create a `virtualenv` for a new project using `python3` called `gutentag`
 
-{% highlight bash %} mkvirtualenv -p `which python` gutentag {% endhighlight %}
+<TerminalBlock language="bash">
+mkvirtualenv -p \`which python\` gutentag
+</TerminalBlock>
 
 This command can be run from anywhere, though I tend to create a directory for the project in my
 `$HOME/Developer/` directory with the same name as the `virtualenv`.
@@ -17,21 +19,27 @@ This command can be run from anywhere, though I tend to create a directory for t
 
 What if you no longer need a particular `virtualenv`? Use the `rmvirtualenv` command.
 
-{% highlight bash %} rmvirtualenv gutentag {% endhighlight %}
+<TerminalBlock language="bash">
+rmvirtualenv gutentag
+</TerminalBlock>
 
 ## List all current virtualenv
 
 To output a list of existing `virtualenv` setups, use the `lsvirtualenv` following command, note the
 `-b` option for brevity.
 
-{% highlight bash %} lsvirtualenv -b {% endhighlight %}
+<TerminalBlock language="bash">
+lsvirtualenv -b
+</TerminalBlock>
 
 ---
 
 ## Installing mkvirtualenv
 
+<Callout variant="note">
 **These steps are copy/pasted from [this stackoverflow Post][stackoverflow-post] so that I can find
 them quickly.**
+</Callout>
 
 To install `virtualenv` and `virtualenvwrapper` for repetitive use you need a correctly configured
 Python (this example uses `Python 3.x` but the process is identical for `Python 2.x`).
@@ -43,11 +51,15 @@ it. The most convenient and future-proof method to install `Python` on `MacOS` i
 Main difference between installer from Python website and brew is that installer puts `python`
 packages to:
 
-{% highlight bash %} /Library/Frameworks/Python.framework/Versions/3.x {% endhighlight %}
+<TerminalBlock language="bash">
+/Library/Frameworks/Python.framework/Versions/3.x
+</TerminalBlock>
 
 `Brew` on the other hand installs `Python`, `Pip` & `Setuptools` and puts everything to:
 
-{% highlight bash %} /usr/local/bin/python3.x/site-packages {% endhighlight %}
+<TerminalBlock language="bash">
+/usr/local/bin/python3.x/site-packages
+</TerminalBlock>
 
 And though it may not make any difference to you now – it will later on.
 
@@ -59,30 +71,38 @@ And though it may not make any difference to you now – it will later on.
 
 Check out `brew` installation page or simply run this in your terminal:
 
-```bash
+<TerminalBlock language="bash" title="install brew">
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-```
+</TerminalBlock>
 
 ### Install Python
 
 To install `python` with `brew` run:
 
-{% highlight bash %} brew install python3 {% endhighlight %}
+<TerminalBlock language="bash">
+brew install python3
+</TerminalBlock>
 
 Now your system needs to know where to look for freshly installed Python packages. Add this line to
 youre `~/.zshrc` (or `~/.bash_profile` if you're using `bash`):
 
-{% highlight bash %} export PATH=/usr/local/share/python:$PATH {% endhighlight %}
+<TerminalBlock language="bash" title="~/.zshrc">
+export PATH=/usr/local/share/python:$PATH
+</TerminalBlock>
 
+<Callout variant="warning">
 **Restart your terminal.** To make sure you've done everything correctly, run `which python3` and in
 return you should receive `/usr/local/bin/python`.
+</Callout>
 
 ### Install virtualenv & virtualenvwrapper
 
 Now it's time to install `virtualenv` and `virtualenvwrapper` to be able to use `workon` command and
 switch between virtual environments. This is done using `pip`:
 
-{% highlight bash %} pip3 install virtualenv virtualenvwrapper {% endhighlight %}
+<TerminalBlock language="bash">
+pip3 install virtualenv virtualenvwrapper
+</TerminalBlock>
 
 ### Set up virtualenv variables
 
@@ -95,14 +115,18 @@ with installed packages:
 
 ## Setting PATH for Python 3 installed by brew
 
-{% highlight bash %} export PATH=/usr/local/share/python:$PATH {% endhighlight %}
+<TerminalBlock language="bash">
+export PATH=/usr/local/share/python:$PATH
+</TerminalBlock>
 
 ## Configuration for virtualenv
 
-{% highlight bash %} export WORKON_HOME=$HOME/.virtualenvs export
-VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3 export
-VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv source /usr/local/bin/virtualenvwrapper.sh
-{% endhighlight %}
+<TerminalBlock language="bash">
+export WORKON_HOME=$HOME/.virtualenvs
+export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
+export VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv
+source /usr/local/bin/virtualenvwrapper.sh
+</TerminalBlock>
 
 ### Restart your terminal
 
