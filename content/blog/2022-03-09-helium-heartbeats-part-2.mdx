@@ -43,12 +43,12 @@ not want published to the internet, but _do_ want available to your scripts.
 #### Edit the `/postactvate` file
 
 <TerminalBlock language="bash" title="postactivate">
-#!/bin/zsh
+{`#!/bin/zsh
 # This hook is sourced after this virtualenv is activated.
 # ~/$HOME/.virtualenvs/helium-heartbeat/bin/postactvate
 
 # sample address - this is not a real wallet address, just an example
-export WALLET_ADDR="95a73802f8434c51a2bec3c8789cac7aa32f63793b8a4374a64"
+export WALLET_ADDR="95a73802f8434c51a2bec3c8789cac7aa32f63793b8a4374a64"`}
 </TerminalBlock>
 
 #### Edit the `/predeactivate` file

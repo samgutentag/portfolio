@@ -9,7 +9,7 @@ publishedAt: "2021-07-24"
 Let's say you wanted to create a `virtualenv` for a new project using `python3` called `gutentag`
 
 <TerminalBlock language="bash">
-mkvirtualenv -p \`which python\` gutentag
+{`mkvirtualenv -p \`which python\` gutentag`}
 </TerminalBlock>
 
 This command can be run from anywhere, though I tend to create a directory for the project in my
@@ -72,7 +72,7 @@ And though it may not make any difference to you now – it will later on.
 Check out `brew` installation page or simply run this in your terminal:
 
 <TerminalBlock language="bash" title="install brew">
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+{`/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`}
 </TerminalBlock>
 
 ### Install Python
@@ -87,7 +87,7 @@ Now your system needs to know where to look for freshly installed Python package
 youre `~/.zshrc` (or `~/.bash_profile` if you're using `bash`):
 
 <TerminalBlock language="bash" title="~/.zshrc">
-export PATH=/usr/local/share/python:$PATH
+{`export PATH=/usr/local/share/python:$PATH`}
 </TerminalBlock>
 
 <Callout variant="warning">
@@ -116,16 +116,16 @@ with installed packages:
 ## Setting PATH for Python 3 installed by brew
 
 <TerminalBlock language="bash">
-export PATH=/usr/local/share/python:$PATH
+{`export PATH=/usr/local/share/python:$PATH`}
 </TerminalBlock>
 
 ## Configuration for virtualenv
 
 <TerminalBlock language="bash">
-export WORKON_HOME=$HOME/.virtualenvs
+{`export WORKON_HOME=$HOME/.virtualenvs
 export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
 export VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv
-source /usr/local/bin/virtualenvwrapper.sh
+source /usr/local/bin/virtualenvwrapper.sh`}
 </TerminalBlock>
 
 ### Restart your terminal

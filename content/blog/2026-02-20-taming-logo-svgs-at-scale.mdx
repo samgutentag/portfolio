@@ -38,7 +38,7 @@ And you can't blindly replace every fill value. `fill="none"` means transparent,
 The bash script handles all three patterns:
 
 <TerminalBlock language="bash" title="generate color variants">
-for dir in public/home/logos/*/; do
+{`for dir in public/home/logos/*/; do
   company=$(basename "$dir")
   # Find the source SVG (use -dark as reference since all share the same paths)
   src="$dir/\${company}-dark.svg"
@@ -65,7 +65,7 @@ for dir in public/home/logos/*/; do
       sed -i '' 's/<svg /<svg fill="'"$color"'" /' "$dest"
     fi
   done
-done
+done`}
 </TerminalBlock>
 
 The negative lookahead for `fill="none"` and `fill="url(..."` is handled by the regex only matching hex color patterns. Since `none` and `url(...)` don't match `#[0-9a-fA-F]{3,6}`, they survive untouched.

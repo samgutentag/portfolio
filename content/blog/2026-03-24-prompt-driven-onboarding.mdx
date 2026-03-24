@@ -65,7 +65,7 @@ to generate an .xcresult bundle"
 
 ## The Prompt Is the API Contract
 
-<!-- TODO: add real success rate numbers once we've tested across repos per Alexander's request -->
+{/* TODO: add real success rate numbers once we've tested across repos per Alexander's request */}
 
 There's something interesting happening here that I didn't fully appreciate until we were deep into it. When your onboarding flow is consumed by an AI agent instead of a human, the prompt text isn't just instructions. It's an API contract. The specificity of the language directly determines the quality of the output.
 
@@ -77,7 +77,7 @@ By including the provider's native vocabulary in the prompt, we're not just bein
 
 The prompt still uses `TRUNK_API_TOKEN` as a placeholder. We deliberately keep the actual token out of the prompt (it's displayed separately with a copy button and a warning about not committing it to CI config files directly). This was a good call from Tyler on the team. You don't want tokens ending up in chat histories or agent context windows any longer than necessary.
 
-<!-- TODO: add results from testing the prompt across Cursor, Claude Code, and Copilot with real repos -->
+{/* TODO: add results from testing the prompt across Cursor, Claude Code, and Copilot with real repos */}
 
 We're behind a feature flag while we test the prompt across different AI agents and repo configurations. The boring 3-step wizard is still there as a fallback. Once we're confident the prompt path works reliably, it becomes the default.
 
