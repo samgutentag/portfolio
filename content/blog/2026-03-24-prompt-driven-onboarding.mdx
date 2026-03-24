@@ -1,0 +1,88 @@
+---
+title: "Your Onboarding Prompt Is Lying to Your AI Agent"
+publishedAt: "2026-03-24"
+summary: "How framework-specific hints and CI-native terminology made our AI-driven onboarding actually work."
+tags: ["devtools", "developer-experience", "ai", "onboarding", "mcp"]
+unpublished: true
+---
+
+Most developer tool onboarding follows the same pattern. Pick your framework, pick your CI provider, follow the steps. It works. It's boring. And increasingly, users aren't the ones following those steps anymore.
+
+Their AI coding assistant is.
+
+We've been building an onboarding flow at [Trunk](https://trunk.io) where users select their test framework and CI provider, then copy a setup prompt into Cursor, Copilot, Claude Code, or whatever agent they're using. The agent reads the prompt, configures JUnit XML output, wires up the CI upload step, and the user starts getting flaky test data. That's the idea, anyway.
+
+The first version of the prompt was generic. It said things like "configure your test framework to output JUnit XML reports" and "add a CI workflow step to upload results." Technically accurate. Practically useless.
+
+## Generic Prompts Produce Generic (Wrong) Config
+
+Here's what happened when we tested the generic prompt across different setups. An agent reading "output JUnit XML reports" for a Bazel project would try to configure a JUnit reporter. Bazel doesn't use JUnit XML. It uses [Build Event Protocol](https://bazel.build/remote/bep). The agent didn't know that because we didn't tell it.
+
+Same problem on the CI side. Tell an agent to "add a workflow step" when the user is on Buildkite, and you'll get a GitHub Actions YAML. Buildkite calls them pipeline steps. Jenkins calls them pipeline stages. GitLab calls them pipeline jobs. The vocabulary matters because it's how the agent decides which config format to generate.
+
+The generic prompt was a coin flip. Sometimes the agent figured it out from context. Often it didn't.
+
+## Tell the Agent Exactly What to Install
+
+The fix was almost embarrassingly simple. Instead of "configure Jest to output JUnit XML," we say "install `jest-junit` and configure the JUnit reporter in jest.config." Instead of "add a CI workflow step," we say "add a Buildkite pipeline step."
+
+We built lookup tables for all 27 frameworks and 10 CI providers. Each one gets the specific package name, flag, or config option that our [docs](https://docs.trunk.io/flaky-tests/get-started/frameworks) recommend.
+
+A few examples of where the specificity matters most:
+
+```
+// Generic (what we had before)
+"Configure pytest to output JUnit XML reports"
+
+// Specific (what we have now)
+"Configure pytest: use the `--junit-xml` flag with `-o junit_family=xunit1`"
+```
+
+That `junit_family=xunit1` flag? Required for file paths to show up in test cases. Without it, the XML is valid but missing data Trunk needs. No agent is going to guess that from "output JUnit XML reports."
+
+```
+// Generic
+"Add a CI workflow step to upload test results"
+
+// Specific (Buildkite)
+"Add a Buildkite pipeline step to upload JUnit XML reports"
+
+// Specific (Jenkins)
+"Add a Jenkins pipeline stage to upload JUnit XML reports"
+```
+
+And for the frameworks that don't even use JUnit XML:
+
+```
+// Bazel
+"Configure Bazel: enable Build Event Protocol output with
+the `--build_event_json_file` flag"
+
+// XCTest
+"Configure XCTest: use `xcodebuild test -resultBundlePath`
+to generate an .xcresult bundle"
+```
+
+## The Prompt Is the API Contract
+
+<!-- TODO: add real success rate numbers once we've tested across repos per Alexander's request -->
+
+There's something interesting happening here that I didn't fully appreciate until we were deep into it. When your onboarding flow is consumed by an AI agent instead of a human, the prompt text isn't just instructions. It's an API contract. The specificity of the language directly determines the quality of the output.
+
+A human reading "add a workflow step" will look at their existing CI config and figure out the right format. An agent reading the same thing has to pick a format based on whatever's most statistically likely in its training data. That's GitHub Actions, almost every time.
+
+By including the provider's native vocabulary in the prompt, we're not just being precise for the sake of it. We're constraining the agent's output space to the correct format. "Pipeline step" tells the agent "this is Buildkite" just as clearly as if we'd said "generate Buildkite config." Maybe more clearly, because it's the term Buildkite actually uses.
+
+## What's Left
+
+The prompt still uses `TRUNK_API_TOKEN` as a placeholder. We deliberately keep the actual token out of the prompt (it's displayed separately with a copy button and a warning about not committing it to CI config files directly). This was a good call from Tyler on the team. You don't want tokens ending up in chat histories or agent context windows any longer than necessary.
+
+<!-- TODO: add results from testing the prompt across Cursor, Claude Code, and Copilot with real repos -->
+
+We're behind a feature flag while we test the prompt across different AI agents and repo configurations. The boring 3-step wizard is still there as a fallback. Once we're confident the prompt path works reliably, it becomes the default.
+
+## Wrap Up
+
+If you're building onboarding that'll be consumed by AI agents (and you should assume it will be), treat your prompt text like code. Be specific about package names. Use the platform's native vocabulary. Don't say "JUnit XML" when the framework uses a different format entirely.
+
+The generic version feels like it should work. The specific version actually does.
