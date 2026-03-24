@@ -1,6 +1,6 @@
 ---
 title: "❤️ Monitor Helium Hotspot Activity Part 1: Overview and Heartbeats"
-summary: "Can't Stop, Wont Stop, (Probably Should Stop) Refreshing."
+summary: "Can't Stop, Won't Stop, (Probably Should Stop) Refreshing."
 publishedAt: "2022-03-08"
 ---
 
@@ -49,12 +49,12 @@ potential issue I can investigate and monitor.
 
 ## What is a "Heartbeat"?
 
-The "Hotspot Heatbeat" is a snapshot of hotspot status at a specific point in time, this script
+The "Hotspot Heartbeat" is a snapshot of hotspot status at a specific point in time, this script
 records the Heartbeat for every Hotspot in my Wallet every 3 minutes via a `cron`. The plots are
 generated at the top of every hour, and the message is sent to Pushover every 8 hours or if a
 Hotspots Status has changed.
 
-<Callout variant="note">A change in status is when a Hotspot has been innactive for more than a specified number of Blocks, I use `450` for my "inactive" status.</Callout>
+<Callout variant="note">A change in status is when a Hotspot has been inactive for more than a specified number of Blocks, I use `450` for my "inactive" status.</Callout>
 
 Here is an example `heartbeat.json` file that is saved by this script, it is lightweight, but that
 keeps storage low and later steps fast and human readable.

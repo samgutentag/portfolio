@@ -15,11 +15,11 @@ in mind (and submit pull requests!)
 
 ## Loading Data
 
-The first step to visulzliing the data is loading the data! The `load_data()` function does exactly
+The first step to visualizing the data is loading the data! The `load_data()` function does exactly
 that.
 
 The function will _find_ all of the Heartbeat JSON files in the `./data` directory, but will only
-plot the last specified `n` days. For effeciency, the script assumes that a day includes at max 144
+plot the last specified `n` days. For efficiency, the script assumes that a day includes at max 144
 Heartbeats (this assumes a 10 minute Heartbeat interval, calculated from
 `6 per hour * 24 hours = 144`) and will only load most recent `144` Heartbeat JSON files.
 
@@ -88,12 +88,12 @@ look something like this:
 ![sample-image][sample-image]
 
 This example shows the Activity Gap of two Hotspots on a 1o minute interval. As the Blue Line gets
-higher, the Hotspot has been innactive longer. These two Hotspots are in good shape. The line is
-blue, and below the `dashed line` at the "inactive threshhold" (in this case 450, which is roughly
+higher, the Hotspot has been inactive longer. These two Hotspots are in good shape. The line is
+blue, and below the `dashed line` at the "inactive threshold" (in this case 450, which is roughly
 7.5 hours given current block times).
 
 The plots also include a `rolling median` line, which is a 30 interval median. This is useful when
-diagnosing longer term trends in HOtspot Activity.
+diagnosing longer term trends in Hotspot Activity.
 
 ### What About The Bad Times?
 
@@ -101,7 +101,7 @@ In the case that a Hotspot has gone more than 450 blocks without any activity, t
 red and fill the plot. This serves as a quick visual marker that something may not be working as
 expected.
 
-In this example, the second Hotspot has crossed the threshold and is now considered Innactive.
+In this example, the second Hotspot has crossed the threshold and is now considered Inactive.
 
 ![sample-image-warning][sample-image-warning]
 
@@ -113,7 +113,7 @@ output image as a `.png` file.
 | ------------------- | --------------------------------------------------------------- |
 | `data`              | a Pandas DataFrame of Heartbeat data                            |
 | `days_back`         | how many days of data to include, default is 3                  |
-| `warning_threshold` | inactive block heights over this value are considered innactive |
+| `warning_threshold` | inactive block heights over this value are considered inactive |
 ```
 
 <Callout variant="note">This function is long, please see the file in the Github repo for all of the details, the snippet code here is truncated for clarity.</Callout>
@@ -148,7 +148,7 @@ def plot_data(data=None, days_back=3, warning_threshold=450):
         d = d.resample("10T").max()
         d.fillna(method="ffill", inplace=True)
 
-        # get latest innactive count to determin line color and fill
+        # get latest inactive count to determine line color and fill
         latest_value = int(d["blocks_inactive"].values[-1])
         color = "r" if latest_value > warning_threshold else "b"
         marker = "d" if d.shape[0] < 30 else ""
@@ -160,7 +160,7 @@ def plot_data(data=None, days_back=3, warning_threshold=450):
             marker=marker,
         )
 
-        # if innactive is grater than warning threshhold, fill in the area under the line
+        # if inactive is greater than warning threshold, fill in the area under the line
         if latest_value > warning_threshold:
             axes[idx].fill_between(
                 x=d.index,

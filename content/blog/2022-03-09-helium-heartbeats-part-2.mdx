@@ -202,7 +202,7 @@ def hotspot_activity(address, cursor="", max_depth=2, api_url="api.helium.io"):
 In the [first post of this series][helium-heartbeat-part-1] I outlined the concept of a Hotspot
 Heartbeat, the short version is a status record for a given Hotspot at a specific point in time.
 
-The `helium-hearbeats.py` script uses a multithreaded approach to get the Hotspot Heartbeat of each
+The `helium-heartbeats.py` script uses a multithreaded approach to get the Hotspot Heartbeat of each
 individual Hotspot associated to a given Helium Wallet.
 
 The `get_wallet_heartbeat()` function does a lot of the heavy lifting.
@@ -238,7 +238,7 @@ wallet_hotspots = helium_api_wrapper.hotspots_for_account(address=os.environ["WA
 
 ### Step 2. Check Hotspot Heartbeats
 
-Next, the script saves time by dividing the work to check the Heartbeat of each Hospot across
+Next, the script saves time by dividing the work to check the Heartbeat of each Hotspot across
 multiple threads, this was developed with a smaller number of hotspots in mind (less than 10), so
 its fast but not _too fast_ if the Wallet has many many Hotspots.
 
@@ -316,7 +316,7 @@ for name in sorted(heartbeats.keys()):
 
 ### Step 4. Store The Result
 
-The `record_heartbeat_data()` function is used to reocrd the heartbeat data to a json file on the
+The `record_heartbeat_data()` function is used to record the heartbeat data to a json file on the
 local machine.
 
 ```python

@@ -8,7 +8,7 @@ tags: ["AI", "developer", "tech", "burgers", "claude code"]
 
 ## I Built Something Faster Than I Could Buy the Domain
 
-Santa Barbara Burger Week is back. Every year, dozens of restaurants across the city (and surrounding area, woo!) serve up $10 specialty burgers for a week long event, and the the primary source of truth is a single article in [The Independent](https://www.independent.com/2026/02/05/burger-week-2026/).
+Santa Barbara Burger Week is back. Every year, dozens of restaurants across the city (and surrounding area, woo!) serve up $10 specialty burgers for a week long event, and the primary source of truth is a single article in [The Independent](https://www.independent.com/2026/02/05/burger-week-2026/).
 
 I wanted a map and thought "I could build that!" In the past, this is where I'd buy a domain name, feel productive about it, make note to work on it in the evening, _and never write a line of code_. I have a graveyard of unused domains to prove it. But this time, I had a working app before the DNS finished propagating.
 
@@ -39,7 +39,7 @@ Any one of those is a 20-minute yak shave. Stack them all up and the project die
 
 ## Describe the What, Not the How
 
-I described the _outcome_ I wanted in plain English, and Claude Code figured out the implementation. I did not give pseudo-code, I didnt draw up architecture diagrams, I simply wrote out my intent.
+I described the _outcome_ I wanted in plain English, and Claude Code figured out the implementation. I did not give pseudo-code, I didn't draw up architecture diagrams, I simply wrote out my intent.
 
 My first prompt was basically: "Here's an article with a list of burger week restaurants. Build me an interactive map."
 
@@ -122,7 +122,7 @@ The whole thing is:
 - GitHub Pages for hosting
 - A GitHub Action for monitoring the source article
 
-It's really that simple, there is not React, no Tailwind, no buildpipeline, just a single html file. This keeps something so simple, so very much, well, simple. I can iterate with Claude quickly and jump in to make manual edits on the fly.
+It's really that simple, there is no React, no Tailwind, no build pipeline, just a single html file. This keeps something so simple, so very much, well, simple. I can iterate with Claude quickly and jump in to make manual edits on the fly.
 
 <Callout variant="tip">You can fork the repo, edit `data.js` with your restaurants, push to GitHub, and you're live.</Callout>
 
